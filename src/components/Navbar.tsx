@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
 
 /* ── Threadflank logo mark ── */
 function ThreadflankLogo() {
@@ -29,29 +30,26 @@ function ThreadflankLogo() {
 
 export default function Navbar() {
   const p = usePathname();
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [mounted, setMounted] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     setMounted(true);
-    const saved = localStorage.getItem("theme") as "dark" | "light" | null;
-    const pref = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
-    const init = saved || pref || "dark";
-    setTheme(init);
-    document.documentElement.setAttribute("data-theme", init);
+    document.documentElement.setAttribute("data-theme", "dark");
+
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
-  const toggleTheme = () => {
-    const next = theme === "dark" ? "light" : "dark";
-    setTheme(next);
-    localStorage.setItem("theme", next);
-    document.documentElement.setAttribute("data-theme", next);
-  };
-
-  const currentTheme = mounted ? theme : "dark";
-
   return (
-    <nav className="navbar">
+    <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
       <div className="navbar-inner">
 
         {/* ── Logo ── */}
@@ -99,64 +97,28 @@ export default function Navbar() {
 
         {/* ── Right CTA ── */}
         <div className="navbar-right">
-          {/* Theme Toggle Button */}
-          <button
-            type="button"
-            className="theme-toggle-btn"
-            onClick={toggleTheme}
-            aria-label="Toggle Theme"
-            style={{
-              background: "none",
-              border: "none",
-              color: "var(--text-soft)",
-              cursor: "pointer",
-              padding: "8px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: "50%",
-              transition: "background 0.15s, color 0.15s",
-              marginRight: "8px"
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "var(--card-border-hover)";
-              e.currentTarget.style.color = "var(--text)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "none";
-              e.currentTarget.style.color = "var(--text-soft)";
-            }}
-          >
-            {currentTheme === "light" ? (
-              // Moon Icon
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-              </svg>
-            ) : (
-              // Sun Icon
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="5"/>
-                <line x1="12" y1="1" x2="12" y2="3"/>
-                <line x1="12" y1="21" x2="12" y2="23"/>
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                <line x1="1" y1="12" x2="3" y2="12"/>
-                <line x1="21" y1="12" x2="23" y2="12"/>
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-              </svg>
-            )}
-          </button>
-
-          <Link href="/setup" className="navbar-login-btn">
-            Log in
-          </Link>
-          <Link href="/setup" className="navbar-cta-btn">
-            Start free
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </Link>
+          {user ? (
+            <>
+              <Link href="/profile" className="navbar-login-btn">
+                👤 {user.username || user.email.split("@")[0]}
+              </Link>
+              <button onClick={logout} className="navbar-cta-btn" style={{ border: "none", cursor: "pointer" }}>
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="navbar-login-btn">
+                Log in
+              </Link>
+              <Link href="/signup" className="navbar-cta-btn">
+                Start for free
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+              </Link>
+            </>
+          )}
         </div>
 
       </div>

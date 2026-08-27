@@ -15,6 +15,7 @@
     "next": "latest",
     "react": "latest",
     "react-dom": "latest",
+    "socket.io-client": "^4.8.3",
     "three": "^0.184.0"
   },
   "devDependencies": {

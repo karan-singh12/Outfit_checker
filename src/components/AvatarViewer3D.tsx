@@ -208,28 +208,9 @@ export function AvatarViewer3D({ gender = "man", avatarUrl, clothingColors }: Av
     /* ── Scene ── */
     const scene = new THREE.Scene();
     
-    // Dynamic theme colors helper
-    const updateColorsForTheme = () => {
-      const isLight = document.documentElement.getAttribute("data-theme") === "light";
-      const finalHex = isLight ? "#f5f4fa" : "#08080a";
-      scene.background = new THREE.Color(finalHex);
-      if (scene.fog) {
-        scene.fog.color.set(finalHex);
-      } else {
-        scene.fog = new THREE.Fog(finalHex, 6, 12);
-      }
-    };
-
-    updateColorsForTheme();
-
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === "data-theme") {
-          updateColorsForTheme();
-        }
-      });
-    });
-    observer.observe(document.documentElement, { attributes: true });
+    const finalHex = "#08080a";
+    scene.background = new THREE.Color(finalHex);
+    scene.fog = new THREE.Fog(finalHex, 6, 12);
 
     /* ── Camera ── */
     const camera = new THREE.PerspectiveCamera(40, w / h, 0.1, 50);
@@ -683,7 +664,6 @@ export function AvatarViewer3D({ gender = "man", avatarUrl, clothingColors }: Av
     return () => {
       cancelAnimationFrame(animId);
       ro.disconnect();
-      observer.disconnect();
       controls.dispose();
       renderer.dispose();
       dom.removeEventListener("pointerdown", onPointerDown);

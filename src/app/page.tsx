@@ -1,6 +1,13 @@
 "use client";
+
 import Link from "next/link";
 import { useState } from "react";
+import dynamic from "next/dynamic";
+
+const FlowWave = dynamic(
+  () => import("@/components/FlowWave").then((mod) => mod.FlowWave),
+  { ssr: false }
+);
 
 /* ── scrolling items ── */
 const MARQUEE = ["AI TRY-ON", "ANY STORE", "3D AVATAR", "MAKEUP", "REAL-TIME", "SAVE LOOKS", "WARDROBE", "SELFIE-POWERED"];
@@ -98,65 +105,13 @@ const TABS = [
     ],
     code: [
       { t: "comment", v: "// makeup-palette" },
-      { t: "swatches", colors: ["#dc143c","#c71585","#ff6b6b","#e75480","#8b0000","#d2691e","#ff4500","#4b0082"] },
       { t: "divider" },
-      { t: "ok", v: "Lipstick · 15 shades" },
-      { t: "ok", v: "Eyeshadow · 15 tones" },
-      { t: "muted", v: "Blush · 0–100 intensity" },
+      { t: "key", v: "lipstick:", p: " Ruby Red" },
+      { t: "key", v: "eyeshadow:", p: " Smoky Charcoal" },
+      { t: "key", v: "blush:", p: " Peach (45%)" },
+      { t: "divider" },
+      { t: "ok", v: "applied successfully" },
     ],
-  },
-];
-
-/* ── 6-panel feature grid ── */
-const PANELS = [
-  {
-    label: "WARDROBE",
-    desc: "Every item you own in one smart digital closet.",
-    rows: [
-      { tag: "👕 TOP",    val: "Oxford Shirt · #f5f5f5" },
-      { tag: "👖 BOTTOM", val: "Black Slim Jeans" },
-      { tag: "👟 SHOES",  val: "White Sneakers" },
-      { tag: "👜 BAG",    val: "Leather Tote" },
-    ],
-    stat: "24 items indexed",
-  },
-  {
-    label: "AI TRY-ON",
-    desc: "Upload a selfie, paste a link — AI does the rest.",
-    rows: [
-      { tag: "model",  val: "IDM-VTON" },
-      { tag: "input",  val: "selfie + garment image" },
-    ],
-    ok: ["Processing complete · 42s", "Result image ready"],
-  },
-  {
-    label: "3D STUDIO",
-    desc: "Real-time 3D room with lighting and live color swap.",
-    rows: [
-      { tag: "renderer", val: "WebGL · 60fps" },
-      { tag: "avatar",   val: "male.glb loaded" },
-    ],
-    ok: ["Torso zone → #ffffff", "Legs zone → #1e3a5f"],
-  },
-  {
-    label: "MAKEUP",
-    desc: "Apply lipstick, eyeshadow and blush before you buy.",
-    swatches: ["#dc143c","#c71585","#ff6b6b","#e75480","#8b0000","#d2691e"],
-    ok: ["Lipstick · Crimson Red", "Eyeshadow · Smoky Plum"],
-  },
-  {
-    label: "LINK SCRAPER",
-    desc: "Paste any product URL and we extract the image.",
-    rows: [
-      { tag: "source", val: "myntra.com/product/…" },
-    ],
-    ok: ["og:image found", "JSON-LD extracted", "garmentUrl returned"],
-  },
-  {
-    label: "SAVED LOOKS",
-    desc: "Your curated outfits, ready to wear or share.",
-    looks: ["Summer Casual · 1d", "Office Chic · 2d", "Night Out · 5d"],
-    stat: "3 looks saved",
   },
 ];
 
@@ -191,42 +146,31 @@ export default function LandingPage() {
 
   return (
     <div className="nf-page">
+      <FlowWave />
 
-      {/* ─── Top marquee ──────────────────────────────────────────── */}
-      <div className="nf-marquee-bar">
-        <div className="nf-marquee-track">
-          {[...MARQUEE, ...MARQUEE].map((item, i) => (
-            <span key={i} className="nf-marquee-item font-mono">
-              {item}<span className="nf-marquee-sep">|</span>
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* ─── Hero ─────────────────────────────────────────────────── */}
+      {/* ─── Hero Section ─────────────────────────────────────────── */}
       <section className="nf-hero">
         <div className="nf-hero-glow nf-hero-glow-1"/>
         <div className="nf-hero-glow nf-hero-glow-2"/>
 
-        {/* eyebrow pill */}
+        {/* Eyebrow Pill */}
         <div className="nf-eyebrow">
           <span className="nf-eyebrow-dot"/>
           Try on outfits, shoes, accessories &amp; makeup — from any store
         </div>
 
-        {/* headline */}
+        {/* Headline */}
         <h1 className="nf-headline">
           Your virtual dressing room,<br/>
           <span className="nf-headline-accent">powered by AI.</span>
         </h1>
 
-        {/* subhead */}
+        {/* Subhead */}
         <p className="nf-subhead">
-          Build your digital twin once. Then try on anything from Myntra, Zara,
-          ASOS or any store — on your avatar, before spending a rupee.
+          Upload one selfie. See yourself — same face, same body — wearing any outfit from Myntra, Zara, ASOS or any store. No mannequins, no guesswork.
         </p>
 
-        {/* CTAs — exact Northflank layout */}
+        {/* CTAs */}
         <div className="nf-cta-row">
           <Link href="/setup" className="nf-btn-primary">
             Start for free
@@ -238,94 +182,42 @@ export default function LandingPage() {
           </Link>
         </div>
 
-        {/* Hero visual — floating dashboard card */}
+        {/* Hero Visual Mockup */}
         <div className="nf-hero-visual">
-          <div className="nf-hero-card">
-            <div className="nf-hero-card-bar">
-              <div style={{display:"flex",gap:6}}>
-                <span className="cp-dot red"/><span className="cp-dot yellow"/><span className="cp-dot green"/>
-              </div>
-              <span className="font-mono" style={{fontSize:11,color:"var(--muted)"}}>drape — virtual studio</span>
-              <span className="nf-hero-badge"><span className="nf-status-dot"/>LIVE</span>
+          <div className="nf-hero-tryon-mockup">
+            <div className="mockup-header">
+              <span className="cp-dot red"/><span className="cp-dot yellow"/><span className="cp-dot green"/>
+              <span className="font-mono" style={{ fontSize: 11, color: "var(--muted)" }}>try-on-pipeline · active</span>
             </div>
-            <div className="nf-hero-card-body">
-              {/* Left: avatar placeholder */}
-              <div className="nf-hero-avatar">
-                <div className="nf-hero-avatar-figure">
-                  <div className="nf-hero-avatar-head"/>
-                  <div className="nf-hero-avatar-body"/>
+            <div className="mockup-body">
+              <div className="mockup-before">
+                <span className="mockup-tag">Selfie</span>
+                <div className="mockup-img-placeholder before-img">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 </div>
-                <div className="nf-hero-avatar-label font-mono">avatar · ready</div>
               </div>
-              {/* Right: outfit slots */}
-              <div className="nf-hero-slots">
-                {[
-                  { emoji:"👕", label:"Top",     val:"Oxford Shirt",  color:"#00c98d" },
-                  { emoji:"👖", label:"Bottom",  val:"Slim Chinos",   color:"#0ea5e9" },
-                  { emoji:"👟", label:"Shoes",   val:"White AF1",     color:"#a3a3a3" },
-                  { emoji:"💄", label:"Makeup",  val:"Ruby Red",      color:"#dc143c" },
-                ].map(s => (
-                  <div key={s.label} className="nf-hero-slot">
-                    <span className="nf-hero-slot-emoji">{s.emoji}</span>
-                    <div className="nf-hero-slot-info">
-                      <span className="nf-hero-slot-label font-mono">{s.label}</span>
-                      <span className="nf-hero-slot-val">{s.val}</span>
-                    </div>
-                    <span className="nf-hero-slot-dot" style={{background:s.color, boxShadow:`0 0 6px ${s.color}66`}}/>
-                  </div>
-                ))}
-                <div className="nf-hero-try-btn">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                  Generate try-on
+              <div className="mockup-arrow">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              </div>
+              <div className="mockup-after">
+                <span className="mockup-tag success">AI Try-on</span>
+                <div className="mockup-img-placeholder after-img">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.38 3.46L16 2a4 4 0 0 0-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.84H5v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V10h1.15a1 1 0 0 0 .99-.84l.58-3.57a2 2 0 0 0-1.34-2.23z"/></svg>
                 </div>
+              </div>
+            </div>
+            <div className="mockup-footer">
+              <img src="/images/hero-tryon-demo.jpg" alt="Try-On Demo" className="mockup-demo-image" />
+              <div className="mockup-footer-text">
+                <span className="font-mono" style={{ fontSize: 12, color: "var(--purple)" }}>✓ VTON Pipeline finished</span>
+                <span style={{ fontSize: 11, color: "var(--text-soft)" }}>preserves your face, pose &amp; background perfectly</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ─── 6-panel feature grid ─────────────────────────────────── */}
-      <section className="nf-panel-section">
-        <div className="nf-panel-grid">
-          {PANELS.map(p => (
-            <div key={p.label} className="nf-panel-card">
-              <div className="nf-panel-label font-mono">
-                <span className="nf-panel-icon-dot"/>{p.label}
-              </div>
-              <p className="nf-panel-desc">{p.desc}</p>
-              <div className="panel-preview">
-                {p.swatches && (
-                  <div style={{display:"flex",gap:5,marginBottom:8,flexWrap:"wrap"}}>
-                    {p.swatches.map(c=><div key={c} style={{width:16,height:16,borderRadius:"50%",background:c,flexShrink:0}}/>)}
-                  </div>
-                )}
-                {p.rows?.map((r,i) => (
-                  <div key={i} className="panel-row">
-                    <span className="panel-tag mono-muted">{r.tag}</span>
-                    <span className="panel-val">{r.val}</span>
-                  </div>
-                ))}
-                {(p.rows || p.swatches) && p.ok && <div className="panel-divider"/>}
-                {p.ok?.map((v,i) => (
-                  <div key={i} className="panel-row">
-                    <span className="mono-success">✓</span>
-                    <span className="panel-val">{v}</span>
-                  </div>
-                ))}
-                {p.looks?.map((v,i) => (
-                  <div key={i} className="panel-row">
-                    <span className="tab-preview-dot green" style={{flexShrink:0}}/>
-                    <span className="panel-val">{v}</span>
-                  </div>
-                ))}
-                {p.stat && <><div className="panel-divider"/><div className="panel-stat"><span className="mono-success">{p.stat.split(" ")[0]}</span> <span className="mono-muted">{p.stat.split(" ").slice(1).join(" ")}</span></div></>}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ─── Platform strip ───────────────────────────────────────── */}
+      {/* ─── Platform Strip ───────────────────────────────────────── */}
       <div className="nf-platform-strip">
         <span className="nf-platform-label">Threadflank</span>
         <span className="nf-platform-sep">WORKS WITH</span>
@@ -335,7 +227,108 @@ export default function LandingPage() {
         <span className="nf-platform-chip nf-platform-chip-any">Any store →</span>
       </div>
 
-      {/* ─── Status ticker ────────────────────────────────────────── */}
+      {/* ─── Four Alternating Feature Sections ─────────────────────── */}
+      <section className="nf-features-alternating">
+        
+        {/* Section A — AI Try-On (flagship feature) */}
+        <div className="alt-feature-row">
+          <div className="alt-feature-visual">
+            <div className="alt-feature-card">
+              <div className="card-bar">
+                <span className="cp-dot red"/><span className="cp-dot yellow"/><span className="cp-dot green"/>
+                <span className="font-mono" style={{ fontSize: 11, color: "var(--muted)" }}>tryon-pipeline.sh</span>
+              </div>
+              <div className="card-image-content">
+                <img src="/images/feature-tryon.jpg" alt="AI Try-On Demo" className="feature-demo-img" />
+              </div>
+            </div>
+          </div>
+          <div className="alt-feature-text">
+            <span className="alt-feature-eyebrow">AI Try-on</span>
+            <h2 className="alt-feature-headline">See it on you before you buy it</h2>
+            <p className="alt-feature-body">
+              Upload a selfie and basic measurements, paste any product link or image, and Threadflank generates a realistic render of you wearing it. Your face and body remain untouched—only the outfit changes.
+            </p>
+            <Link href="/setup" className="alt-feature-btn">
+              Try it now
+            </Link>
+          </div>
+        </div>
+
+        {/* Section B — Wardrobe & Event Planning */}
+        <div className="alt-feature-row alt-reverse">
+          <div className="alt-feature-text">
+            <span className="alt-feature-eyebrow">Wardrobe</span>
+            <h2 className="alt-feature-headline">Never wonder what to wear again</h2>
+            <p className="alt-feature-body">
+              Save outfit combinations to a personal wardrobe board before buying. Mix and match for an upcoming event, compare options side by side, and decide without trying on 10 physical outfits.
+            </p>
+            <Link href="/wardrobe" className="alt-feature-btn">
+              Build your wardrobe
+            </Link>
+          </div>
+          <div className="alt-feature-visual">
+            <div className="alt-feature-card">
+              <div className="card-bar">
+                <span className="font-mono" style={{ fontSize: 11, color: "var(--muted)" }}>wardrobe-board // event-planning</span>
+              </div>
+              <div className="card-image-content">
+                <img src="/images/feature-wardrobe.jpg" alt="Wardrobe planning" className="feature-demo-img" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Section C — Share & Get Opinions */}
+        <div className="alt-feature-row">
+          <div className="alt-feature-visual">
+            <div className="alt-feature-card">
+              <div className="card-bar">
+                <span className="font-mono" style={{ fontSize: 11, color: "var(--muted)" }}>live-share-session</span>
+              </div>
+              <div className="card-image-content">
+                <img src="/images/feature-social.jpg" alt="Social share session" className="feature-demo-img" />
+              </div>
+            </div>
+          </div>
+          <div className="alt-feature-text">
+            <span className="alt-feature-eyebrow">Social</span>
+            <h2 className="alt-feature-headline">Get a second opinion, instantly</h2>
+            <p className="alt-feature-body">
+              Share a look with friends via chat or video call inside the app and get real-time feedback before deciding. No more group-chat screenshots.
+            </p>
+            <Link href="/messages" className="alt-feature-btn">
+              See how it works
+            </Link>
+          </div>
+        </div>
+
+        {/* Section D — Trending Feed */}
+        <div className="alt-feature-row alt-reverse">
+          <div className="alt-feature-text">
+            <span className="alt-feature-eyebrow">Discover</span>
+            <h2 className="alt-feature-headline">Fresh drops, styled for you</h2>
+            <p className="alt-feature-body">
+              Browse trending and new arrivals from partner brands, curated into a feed. Try any of it on your avatar with just one tap.
+            </p>
+            <Link href="/trending" className="alt-feature-btn">
+              Explore trending
+            </Link>
+          </div>
+          <div className="alt-feature-visual">
+            <div className="alt-feature-card">
+              <div className="card-bar">
+                <span className="font-mono" style={{ fontSize: 11, color: "var(--muted)" }}>trending-feed-curated</span>
+              </div>
+              <div className="card-image-content">
+                <img src="/images/feature-discover.jpg" alt="Discover trending outfits" className="feature-demo-img" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Status Ticker ────────────────────────────────────────── */}
       <div className="nf-status-bar">
         <div className="nf-status-track">
           {[...STATUS,...STATUS].map((item,i)=>(
@@ -346,19 +339,7 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* ─── Trust strip ──────────────────────────────────────────── */}
-      <section className="nf-trust-section">
-        <p className="nf-trust-headline">
-          Trusted by <span className="gradient-text">style-forward</span> shoppers &amp; fashion lovers
-        </p>
-        <div className="nf-logo-cloud">
-          {["MYNTRA","ZARA","H&M","ASOS","NYKAA","AMAZON FASHION","AJIO","MEESHO"].map(b=>(
-            <div key={b} className="nf-logo-chip font-mono">{b}</div>
-          ))}
-        </div>
-      </section>
-
-      {/* ─── Tabbed feature section ───────────────────────────────── */}
+      {/* ─── Tabbed Feature Section ───────────────────────────────── */}
       <section className="nf-tabs-section">
         <h2 className="nf-tabs-headline">
           The operating system<br/>for your personal wardrobe.
@@ -394,7 +375,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── Stats bar ────────────────────────────────────────────── */}
+      {/* ─── Stats Bar ────────────────────────────────────────────── */}
       <section className="nf-stats-bar">
         {[
           { val:"15+",   label:"Lipstick shades" },
@@ -436,15 +417,15 @@ export default function LandingPage() {
                 <div className="nf-footer-col-title">Product</div>
                 <Link href="/studio"   className="nf-footer-link">Studio</Link>
                 <Link href="/wardrobe" className="nf-footer-link">Wardrobe</Link>
-                <Link href="/looks"    className="nf-footer-link">Saved Looks</Link>
+                <Link href="/looks"    className="nf-footer-link">Saved looks</Link>
                 <Link href="/trending" className="nf-footer-link">Trending</Link>
               </div>
               <div className="nf-footer-col">
                 <div className="nf-footer-col-title">Features</div>
-                <span className="nf-footer-link">AI Try-On</span>
-                <Link href="/setup" className="nf-footer-link">Digital Twin</Link>
-                <span className="nf-footer-link">Makeup Studio</span>
-                <span className="nf-footer-link">Link Scraper</span>
+                <span className="nf-footer-link">AI Try-on</span>
+                <Link href="/setup" className="nf-footer-link">Digital twin</Link>
+                <span className="nf-footer-link">Makeup studio</span>
+                <span className="nf-footer-link">Link scraper</span>
               </div>
               <div className="nf-footer-col">
                 <div className="nf-footer-col-title">Stores</div>

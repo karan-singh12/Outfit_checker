@@ -1,26 +1,27 @@
 "use client";
-import { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { useAuth } from "../../context/AuthContext";
+import { useRouter } from "next/navigation";
 
 type Category = "all"|"tops"|"bottoms"|"dresses"|"outerwear"|"footwear"|"bags"|"jewellery"|"eyewear"|"makeup";
 
 interface WardrobeItem {
   id: string;
   name: string;
-  brand: string;
+  brand: string | null;
   category: Category;
   image: string;
-  color: string;
+  color: string | null;
   tags: string[];
 }
 
-// ── Category SVG Icon Component ──────────────────────────────────────────
 export const CategoryIcon = ({ id, className = "sidebar-svg" }: { id: Category; className?: string }) => {
   switch (id) {
     case "tops":
       return (
         <svg className={className} viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a2 2 0 0 0 .99 1.47L7 12v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-9l3.15-1.37a2 2 0 0 0 .99-1.47l.58-3.47a2 2 0 0 0-1.34-2.23z" />
+          <path d="M20.38 3.46L16 2a4 4 0 0 0-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a2 2 0 0 0 .99 1.47L7 12v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-9l3.15-1.37a2 2 0 0 0 .99-1.47l.58-3.47a2 2 0 0 0-1.34-2.23z" />
         </svg>
       );
     case "bottoms":
@@ -95,22 +96,6 @@ export const CategoryIcon = ({ id, className = "sidebar-svg" }: { id: Category; 
   }
 };
 
-// ── Mock wardrobe data with generated image paths ────────────────────────────
-const MOCK_ITEMS: WardrobeItem[] = [
-  { id:"1", name:"White Oxford Shirt", brand:"Zara", category:"tops", image:"/images/white_oxford.png", color:"#f5f5f5", tags:["Formal","Work"] },
-  { id:"2", name:"Floral Maxi Dress", brand:"H&M", category:"dresses", image:"/images/floral_dress.png", color:"#f472b6", tags:["Casual","Summer"] },
-  { id:"3", name:"Black Skinny Jeans", brand:"Levi's", category:"bottoms", image:"/images/black_jeans.png", color:"#1a1a2e", tags:["Casual"] },
-  { id:"4", name:"Oversized Blazer", brand:"Mango", category:"outerwear", image:"/images/blazer.png", color:"#6b7280", tags:["Formal","Work"] },
-  { id:"5", name:"White Sneakers", brand:"Nike", category:"footwear", image:"/images/white_sneakers.png", color:"#ffffff", tags:["Casual","Sport"] },
-  { id:"6", name:"Block Heel Pumps", brand:"Steve Madden", category:"footwear", image:"/images/heel_pumps.png", color:"#dc2626", tags:["Formal","Party"] },
-  { id:"7", name:"Leather Tote Bag", brand:"Charles & Keith", category:"bags", image:"/images/leather_tote.png", color:"#92400e", tags:["Work"] },
-  { id:"8", name:"Pearl Necklace", brand:"Accessorize", category:"jewellery", image:"/images/pearl_necklace.png", color:"#fde68a", tags:["Party","Formal"] },
-  { id:"9", name:"Cat-Eye Sunglasses", brand:"Ray-Ban", category:"eyewear", image:"/images/sunglasses.png", color:"#000000", tags:["Casual","Summer"] },
-  { id:"10", name:"Velvet Midi Skirt", brand:"Myntra", category:"bottoms", image:"/images/velvet_skirt.png", color:"#7c3aed", tags:["Party","Casual"] },
-  { id:"11", name:"Satin Slip Dress", brand:"ASOS", category:"dresses", image:"/images/satin_dress.png", color:"#fbbf24", tags:["Party","Date"] },
-  { id:"12", name:"Trench Coat", brand:"Marks & Spencer", category:"outerwear", image:"/images/trench_coat.png", color:"#d97706", tags:["Work","Rainy"] },
-];
-
 const CATEGORIES: { id: Category; label: string; group?: string }[] = [
   { id:"all", label:"All Items" },
   { id:"tops", label:"Tops & Shirts", group:"Clothing" },
@@ -125,27 +110,88 @@ const CATEGORIES: { id: Category; label: string; group?: string }[] = [
 ];
 
 export default function WardrobePage() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+
   const [activeCategory, setActiveCategory] = useState<Category>("all");
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [newName, setNewName] = useState("");
   const [newBrand, setNewBrand] = useState("");
   const [newCategory, setNewCategory] = useState<Category>("tops");
-  const [items, setItems] = useState<WardrobeItem[]>(MOCK_ITEMS);
+  const [newImage, setNewImage] = useState("");
+  const [items, setItems] = useState<WardrobeItem[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
-  const filtered = useMemo(() => {
-    return items.filter((item) => {
-      const matchCat = activeCategory === "all" || item.category === activeCategory;
-      const matchSearch = !search || item.name.toLowerCase().includes(search.toLowerCase()) || item.brand.toLowerCase().includes(search.toLowerCase());
-      return matchCat && matchSearch;
-    });
-  }, [items, activeCategory, search]);
+  // Protect route
+  useEffect(() => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("tf_token") : null;
+    if (!authLoading && !token) {
+      router.push("/login");
+    }
+  }, [user, authLoading, router]);
 
-  const countForCat = (cat: Category) =>
-    cat === "all" ? items.length : items.filter((i) => i.category === cat).length;
+  // Fetch Wardrobe Items
+  const fetchWardrobeItems = async () => {
+    const token = localStorage.getItem("tf_token");
+    if (!token) return;
 
-  const addItem = () => {
+    try {
+      const res = await fetch("http://127.0.0.1:3003/api/wardrobe", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const json = await res.json();
+      if (json.success && json.data) {
+        setItems(json.data);
+      }
+    } catch (err) {
+      console.error("Error fetching wardrobe items:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchWardrobeItems();
+    }
+  }, [user]);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setUploadError(null);
+
+    const token = localStorage.getItem("tf_token");
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("http://127.0.0.1:3003/api/uploads", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        body: formData
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.message || "Failed to upload image");
+      }
+      setNewImage(json.data.url);
+    } catch (err: any) {
+      setUploadError(err.message || "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const addItem = async () => {
     if (!newName.trim()) return;
+    const token = localStorage.getItem("tf_token");
+    if (!token) return;
+
     const defaultImages: Record<Category, string> = {
       all:"/images/floral_dress.png",
       tops:"/images/white_oxford.png",
@@ -158,20 +204,83 @@ export default function WardrobePage() {
       eyewear:"/images/sunglasses.png",
       makeup:"/images/lipstick.png",
     };
-    setItems((prev) => [...prev, {
-      id: String(Date.now()),
-      name: newName.trim(),
-      brand: newBrand.trim() || "My Item",
-      category: newCategory,
-      image: defaultImages[newCategory] || "/images/white_oxford.png",
-      color: "#3b82f6",
-      tags: [],
-    }]);
-    setNewName(""); setNewBrand(""); setNewCategory("tops");
-    setShowModal(false);
+
+    const imageToSend = newImage || defaultImages[newCategory];
+
+    try {
+      const res = await fetch("http://127.0.0.1:3003/api/wardrobe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: newName.trim(),
+          brand: newBrand.trim() || "My Item",
+          category: newCategory,
+          image: imageToSend,
+          color: "#3b82f6",
+          tags: []
+        })
+      });
+      const json = await res.json();
+      if (json.success && json.data) {
+        setItems(prev => [json.data, ...prev]);
+        setNewName("");
+        setNewBrand("");
+        setNewCategory("tops");
+        setNewImage("");
+        setShowModal(false);
+      }
+    } catch (err) {
+      console.error("Error adding wardrobe item:", err);
+    }
   };
 
+  const deleteItem = async (id: string) => {
+    const token = localStorage.getItem("tf_token");
+    if (!token) return;
+
+    try {
+      const res = await fetch(`http://127.0.0.1:3003/api/wardrobe/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const json = await res.json();
+      if (json.success) {
+        setItems(prev => prev.filter(item => item.id !== id));
+      }
+    } catch (err) {
+      console.error("Error deleting item:", err);
+    }
+  };
+
+  const getFullImageUrl = (imagePath: string) => {
+    if (!imagePath) return "/images/white_oxford.png";
+    if (imagePath.startsWith("http") || imagePath.startsWith("/images/")) return imagePath;
+    return `http://127.0.0.1:3003${imagePath}`;
+  };
+
+  const filtered = useMemo(() => {
+    return items.filter((item) => {
+      const matchCat = activeCategory === "all" || item.category === activeCategory;
+      const matchSearch = !search || item.name.toLowerCase().includes(search.toLowerCase()) || (item.brand && item.brand.toLowerCase().includes(search.toLowerCase()));
+      return matchCat && matchSearch;
+    });
+  }, [items, activeCategory, search]);
+
+  const countForCat = (cat: Category) =>
+    cat === "all" ? items.length : items.filter((i) => i.category === cat).length;
+
   const groups = ["Clothing", "Shoes & Bags", "Accessories", "Beauty"];
+
+  if (authLoading || !user) {
+    return (
+      <div className="page-wrapper" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 64px)" }}>
+        <p style={{ color: "var(--text-soft)" }}>Connecting to server...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="page-wrapper" style={{ paddingTop: 28 }}>
@@ -231,7 +340,6 @@ export default function WardrobePage() {
           ))}
         </aside>
 
-
         {/* Main */}
         <div className="wardrobe-main">
           {/* Toolbar */}
@@ -277,16 +385,19 @@ export default function WardrobePage() {
 
               {filtered.map((item) => (
                 <div key={item.id} className="item-card">
-                  <div className="item-card-thumb" style={{ background: `${item.color}22` }}>
-                    <img src={item.image} alt={item.name} />
+                  <div className="item-card-thumb" style={{ background: `${item.color || "#3b82f6"}22` }}>
+                    <img src={getFullImageUrl(item.image)} alt={item.name} />
                     <span className="item-cat-badge">{item.category}</span>
-                    <div className="item-card-overlay">
-                      <Link href="/studio" className="btn btn-gradient btn-sm">Try On</Link>
+                    <div className="item-card-overlay" style={{ display: "flex", flexDirection: "column", gap: 8, padding: 8 }}>
+                      <Link href="/studio" className="btn btn-gradient btn-sm" style={{ width: "100%", textAlign: "center" }}>Try On</Link>
+                      <button type="button" onClick={() => deleteItem(item.id)} className="btn btn-ghost btn-sm" style={{ width: "100%", background: "rgba(220, 38, 38, 0.2)", color: "var(--danger)", border: "none" }}>
+                        Delete
+                      </button>
                     </div>
                   </div>
                   <div className="item-card-info">
                     <p className="item-card-name">{item.name}</p>
-                    <p className="item-card-brand">{item.brand}</p>
+                    <p className="item-card-brand">{item.brand || "My Brand"}</p>
                   </div>
                 </div>
               ))}
@@ -304,17 +415,29 @@ export default function WardrobePage() {
               <button className="modal-close" onClick={() => setShowModal(false)}>×</button>
             </div>
 
-            <div className="upload-zone" style={{ marginBottom: 20, minHeight: 120 }}>
-              <input type="file" accept="image/*" />
-              <div className="upload-zone-icon" style={{ width: 44, height: 44 }}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                  <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-                </svg>
-              </div>
-              <p className="upload-zone-title" style={{ fontSize: 14 }}>Upload garment image</p>
-              <p className="upload-zone-sub">or paste a product URL below</p>
-            </div>
+            <label className="upload-zone" style={{ marginBottom: 20, minHeight: 120, cursor: "pointer" }}>
+              <input type="file" accept="image/*" onChange={handleFileChange} style={{ display: "none" }} />
+              {uploading ? (
+                <p style={{ fontSize: 13, color: "var(--text-soft)" }}>Uploading image...</p>
+              ) : newImage ? (
+                <img src={getFullImageUrl(newImage)} alt="Preview" style={{ maxHeight: 100, borderRadius: "var(--r-xs)" }} />
+              ) : (
+                <>
+                  <div className="upload-zone-icon" style={{ width: 44, height: 44 }}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                  </div>
+                  <p className="upload-zone-title" style={{ fontSize: 14 }}>Upload garment image</p>
+                  <p className="upload-zone-sub">or click to browse files</p>
+                </>
+              )}
+            </label>
+
+            {uploadError && (
+              <p style={{ color: "var(--danger)", fontSize: 12, marginBottom: 10 }}>{uploadError}</p>
+            )}
 
             <div className="form-group">
               <label className="form-label">Item Name</label>
@@ -345,7 +468,7 @@ export default function WardrobePage() {
 
             <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
               <button type="button" className="btn btn-ghost" style={{ flex: 1 }} onClick={() => setShowModal(false)}>Cancel</button>
-              <button type="button" className="btn btn-gradient" style={{ flex: 2 }} onClick={addItem} disabled={!newName.trim()}>
+              <button type="button" className="btn btn-gradient" style={{ flex: 2 }} onClick={addItem} disabled={!newName.trim() || uploading}>
                 Add to Wardrobe
               </button>
             </div>
