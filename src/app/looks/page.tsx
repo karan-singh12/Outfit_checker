@@ -1,7 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { CategoryIcon } from "../wardrobe/page";
+import { useAuth } from "../../context/AuthContext";
+import { fetchLooks, toggleLikeLook } from "../../services/api";
 
 type OccasionFilter = "all"|"casual"|"formal"|"party"|"work"|"date";
 
@@ -80,13 +82,64 @@ const FILTERS: { id: OccasionFilter; label: string }[] = [
 ];
 
 export default function LooksPage() {
+  const { token } = useAuth();
   const [filter, setFilter] = useState<OccasionFilter>("all");
-  const [looks, setLooks] = useState<SavedLook[]>(MOCK_LOOKS);
+  const [looks, setLooks] = useState<SavedLook[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadLooks() {
+      if (!token) {
+        setLooks(MOCK_LOOKS);
+        setLoading(false);
+        return;
+      }
+      try {
+        const data = await fetchLooks(token);
+        if (data && data.length > 0) {
+          const mapped = data.map((l) => ({
+            id: l.id,
+            name: l.name,
+            occasion: l.occasion as OccasionFilter,
+            image: l.image.startsWith("/public") ? `http://127.0.0.1:3003${l.image}` : l.image,
+            gradient: l.gradient || "linear-gradient(135deg,#1e3a5f,#374151)",
+            pieces: l.pieces,
+            date: new Date(l.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+            liked: l.liked
+          }));
+          setLooks(mapped);
+        } else {
+          setLooks(MOCK_LOOKS);
+        }
+      } catch (err) {
+        console.error("Error loading looks from api", err);
+        setLooks(MOCK_LOOKS);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadLooks();
+  }, [token]);
 
   const filtered = filter === "all" ? looks : looks.filter((l) => l.occasion === filter);
 
-  const toggleLike = (id: string) =>
-    setLooks((prev) => prev.map((l) => l.id === id ? { ...l, liked: !l.liked } : l));
+  const toggleLike = async (id: string) => {
+    const isMock = ["1","2","3","4","5","6"].includes(id);
+    setLooks((prev) =>
+      prev.map((l) => (l.id === id ? { ...l, liked: !l.liked } : l))
+    );
+
+    if (isMock || !token) return;
+
+    try {
+      await toggleLikeLook(token, id);
+    } catch (err) {
+      console.error("Failed to toggle like in database", err);
+      setLooks((prev) =>
+        prev.map((l) => (l.id === id ? { ...l, liked: !l.liked } : l))
+      );
+    }
+  };
 
   return (
     <div className="looks-page">

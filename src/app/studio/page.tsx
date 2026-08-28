@@ -1,9 +1,11 @@
 "use client";
 import { useState, useCallback, useEffect, lazy, Suspense } from "react";
-import { generateOutfitTryOn, fetchGarmentFromUrl, tryOnFromUrl } from "../../services/api";
+import { generateOutfitTryOn, fetchGarmentFromUrl, tryOnFromUrl, saveLook } from "../../services/api";
 import type { AvatarBodyProfile, AvatarType } from "../../components/AvatarSelector";
 import { CategoryIcon } from "../wardrobe/page";
 import dynamic from "next/dynamic";
+import { useAuth } from "../../context/AuthContext";
+import { useRouter } from "next/navigation";
 
 // Dynamically import 3D components (client-only)
 const AvatarViewer3D = dynamic(
@@ -76,6 +78,8 @@ const LOOK_SLOTS: { key: keyof CurrentLook; label: string; cat: CatTab }[] = [
 const PROGRESS_MSGS = ["Analysing your look…","Fitting outfit to body…","Rendering fabric details…","Almost done…"];
 
 export default function StudioPage() {
+  const { token } = useAuth();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<CatTab>("tops");
   const [look, setLook] = useState<CurrentLook>({ top:null,bottom:null,dress:null,outerwear:null,shoes:null,bag:null,jewellery:null,eyewear:null,lipstick:null,eyeshadow:null });
   const [selectedItem, setSelectedItem] = useState<Record<string,string>>({});
@@ -89,6 +93,13 @@ export default function StudioPage() {
   const [avatarGender, setAvatarGender] = useState<"man"|"woman">("man");
   const [avatarUrl, setAvatarUrl]       = useState<string | null>(null);
   const [showRPM, setShowRPM]           = useState(false);
+
+  // Look saving states
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [saveName, setSaveName] = useState("");
+  const [saveOccasion, setSaveOccasion] = useState<"casual"|"work"|"formal"|"party"|"date">("casual");
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Link mode
   const [outfitUrl, setOutfitUrl] = useState("");
@@ -178,6 +189,54 @@ export default function StudioPage() {
       setResultImage(response.resultImageUrl);
     } catch (e) { setGenError(e instanceof Error ? e.message : "Generation failed"); }
     finally { setIsGenerating(false); }
+  };
+
+  const handleSaveLook = async () => {
+    if (!token) {
+      setGenError("You must be logged in to save looks.");
+      return;
+    }
+    if (!saveName.trim()) {
+      setSaveError("Please enter a name for the look.");
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveError(null);
+
+    const pieces = LOOK_SLOTS.filter((s) => look[s.key] !== null).map((s) => s.cat);
+    if (look.lipstick || look.eyeshadow) {
+      pieces.push("makeup");
+    }
+
+    const gradients = [
+      "linear-gradient(135deg,#f472b6,#7c3aed)",
+      "linear-gradient(135deg,#1e3a5f,#374151)",
+      "linear-gradient(135deg,#4a1942,#7c3aed)",
+      "linear-gradient(135deg,#881337,#db2777)",
+      "linear-gradient(135deg,#111827,#374151)",
+      "linear-gradient(135deg,#7c2d12,#92400e)"
+    ];
+    const randomGradient = gradients[Math.floor(Math.random() * gradients.length)];
+
+    const finalImage = resultImage || look.top?.image || look.dress?.image || "/images/look_brunch.png";
+
+    try {
+      await saveLook(token, {
+        name: saveName.trim(),
+        occasion: saveOccasion,
+        image: finalImage,
+        pieces,
+        gradient: randomGradient
+      });
+      setShowSaveModal(false);
+      setSaveName("");
+      router.push("/looks");
+    } catch (e: any) {
+      setSaveError(e.message || "Failed to save look.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const filledSlots = LOOK_SLOTS.filter((s) => look[s.key] !== null);
@@ -523,7 +582,7 @@ export default function StudioPage() {
         </div>
 
         <div className="studio-right-actions">
-          <button type="button" className="btn btn-gradient" style={{ width:"100%" }} disabled={!hasLook}>
+          <button type="button" className="btn btn-gradient" style={{ width:"100%" }} disabled={!hasLook} onClick={() => { setSaveError(null); setShowSaveModal(true); }}>
             Save This Look
           </button>
           <button type="button" className="btn btn-ghost" style={{ width:"100%" }} disabled={!resultImage}>
@@ -532,6 +591,87 @@ export default function StudioPage() {
         </div>
       </div>
     </div>
+
+    {/* ══ Save Look Modal ════════════════════════════════════ */}
+    {showSaveModal && (
+      <div className="post-detail-overlay" style={{ display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
+        <div className="setup-card" style={{ maxWidth: "420px", width: "100%", padding: "28px", display: "flex", flexDirection: "column", gap: "20px" }}>
+          <div>
+            <h3 style={{ fontSize: "20px", fontWeight: "700", color: "var(--text)", marginBottom: "6px" }}>Save Current Look</h3>
+            <p style={{ fontSize: "13px", color: "var(--text-soft)" }}>Give this outfit combo a name and select the occasion category.</p>
+          </div>
+
+          {saveError && (
+            <div style={{ padding: "10px 14px", background: "var(--danger-bg)", border: "1px solid var(--danger)", borderRadius: "var(--r-xs)", color: "var(--danger)", fontSize: "12px" }}>
+              {saveError}
+            </div>
+          )}
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <label style={{ fontSize: "11px", fontWeight: "600", color: "var(--text-soft)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Look Name</label>
+            <input
+              type="text"
+              placeholder="e.g. Summer Brunch, Friday Party"
+              value={saveName}
+              onChange={(e) => setSaveName(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "10px 14px",
+                background: "var(--bg-elevated)",
+                border: "1px solid var(--card-border)",
+                borderRadius: "var(--r-xs)",
+                color: "var(--text)",
+                outline: "none",
+              }}
+            />
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <label style={{ fontSize: "11px", fontWeight: "600", color: "var(--text-soft)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Occasion</label>
+            <select
+              value={saveOccasion}
+              onChange={(e) => setSaveOccasion(e.target.value as any)}
+              style={{
+                width: "100%",
+                padding: "10px 14px",
+                background: "var(--bg-elevated)",
+                border: "1px solid var(--card-border)",
+                borderRadius: "var(--r-xs)",
+                color: "var(--text)",
+                outline: "none",
+              }}
+            >
+              <option value="casual">Casual</option>
+              <option value="work">Work</option>
+              <option value="formal">Formal</option>
+              <option value="party">Party</option>
+              <option value="date">Date Night</option>
+            </select>
+          </div>
+
+          <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              style={{ flex: 1, padding: "10px" }}
+              onClick={() => { setShowSaveModal(false); setSaveName(""); setSaveError(null); }}
+              disabled={isSaving}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="btn btn-gradient"
+              style={{ flex: 1, padding: "10px" }}
+              onClick={handleSaveLook}
+              disabled={isSaving || !saveName.trim()}
+            >
+              {isSaving ? "Saving..." : "Save Look"}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
 
     {/* ══ Ready Player Me Modal ════════════════════════════════════ */}
     {showRPM && (

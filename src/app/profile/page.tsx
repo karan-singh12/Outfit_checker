@@ -184,6 +184,42 @@ export default function ProfilePage() {
               )}
 
               <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                <label style={{ fontSize: "11px", fontWeight: "600", color: "var(--text-soft)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Profile Picture</label>
+                <div style={{ display: "flex", alignItems: "center", gap: "16px", background: "var(--bg-elevated)", border: "1px solid var(--card-border)", borderRadius: "var(--r-xs)", padding: "10px 14px" }}>
+                  <div style={{
+                    width: "48px",
+                    height: "48px",
+                    borderRadius: "50%",
+                    overflow: "hidden",
+                    background: "var(--accent-grad)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: "bold",
+                    color: "#08080a"
+                  }}>
+                    {avatar ? (
+                      <img src={avatar.startsWith("/public") ? `http://127.0.0.1:3003${avatar}` : avatar} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    ) : (
+                      (username || user.email).substring(0, 1).toUpperCase()
+                    )}
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      id="avatar-upload-input"
+                      onChange={handleAvatarChange}
+                      style={{ display: "none" }}
+                    />
+                    <label htmlFor="avatar-upload-input" className="btn btn-ghost btn-sm" style={{ cursor: "pointer", display: "inline-block", margin: 0, padding: "6px 12px", fontSize: "12px", border: "1px solid var(--card-border)" }}>
+                      {isUploading ? "Uploading..." : "Choose Image"}
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                 <label style={{ fontSize: "11px", fontWeight: "600", color: "var(--text-soft)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Username</label>
                 <input
                   type="text"
