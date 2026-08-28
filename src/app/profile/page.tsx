@@ -2,15 +2,18 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "next/navigation";
+import { uploadAvatar } from "../../services/api";
 
 export default function ProfilePage() {
-  const { user, updateProfile, loading, error, clearError } = useAuth();
+  const { user, updateProfile, loading, error, clearError, token } = useAuth();
   const router = useRouter();
 
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
   const [location, setLocation] = useState("");
   const [phone, setPhone] = useState("");
+  const [avatar, setAvatar] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -21,6 +24,7 @@ export default function ProfilePage() {
       setBio(user.bio || "");
       setLocation(user.location || "");
       setPhone(user.phone || "");
+      setAvatar(user.avatar || "");
     }
   }, [user]);
 
@@ -32,6 +36,27 @@ export default function ProfilePage() {
       router.push("/login");
     }
   }, [user, router]);
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setValidationError(null);
+    setSuccessMessage(null);
+    clearError();
+
+    try {
+      const url = await uploadAvatar(token || "", file);
+      setAvatar(url);
+      setSuccessMessage("Avatar uploaded! Save changes to persist.");
+      setTimeout(() => setSuccessMessage(null), 4000);
+    } catch (err: any) {
+      setValidationError(err.message || "Failed to upload avatar");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +75,7 @@ export default function ProfilePage() {
         bio,
         location,
         phone,
+        avatar,
       });
       setSuccessMessage("Profile updated successfully!");
       setTimeout(() => setSuccessMessage(null), 4000);
@@ -75,22 +101,38 @@ export default function ProfilePage() {
           
           {/* Card 1: User Summary Card */}
           <div className="setup-card" style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", padding: "32px 24px" }}>
-            <div style={{
-              width: "96px",
-              height: "96px",
-              borderRadius: "50%",
-              background: "var(--accent-grad)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "36px",
-              fontWeight: "700",
-              color: "#08080a",
-              marginBottom: "16px",
-              boxShadow: "var(--glow-purple)"
-            }}>
-              {user.username ? user.username.substring(0, 1).toUpperCase() : user.email.substring(0, 1).toUpperCase()}
-            </div>
+            {user.avatar ? (
+              <img
+                src={user.avatar.startsWith("/public") ? `http://127.0.0.1:3003${user.avatar}` : user.avatar}
+                alt="Profile Avatar"
+                style={{
+                  width: "96px",
+                  height: "96px",
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                  marginBottom: "16px",
+                  boxShadow: "var(--glow-purple)",
+                  border: "2px solid var(--purple)",
+                }}
+              />
+            ) : (
+              <div style={{
+                width: "96px",
+                height: "96px",
+                borderRadius: "50%",
+                background: "var(--accent-grad)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "36px",
+                fontWeight: "700",
+                color: "#08080a",
+                marginBottom: "16px",
+                boxShadow: "var(--glow-purple)"
+              }}>
+                {user.username ? user.username.substring(0, 1).toUpperCase() : user.email.substring(0, 1).toUpperCase()}
+              </div>
+            )}
             
             <h3 style={{ fontSize: "20px", fontWeight: "700", color: "var(--text)", marginBottom: "4px" }}>
               {user.username || "Anonymous"}
