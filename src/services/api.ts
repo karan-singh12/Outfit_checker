@@ -123,3 +123,87 @@ export async function tryOnFromUrl({
 
   return (await res.json()) as TryOnResponse;
 }
+
+export type LookRequest = {
+  name: string;
+  occasion: string;
+  image: string;
+  pieces: string[];
+  gradient?: string;
+};
+
+export type LookResponse = {
+  id: string;
+  name: string;
+  occasion: string;
+  image: string;
+  pieces: string[];
+  gradient?: string;
+  liked: boolean;
+  createdAt: string;
+};
+
+const API_BASE = "http://127.0.0.1:3003/api";
+
+export async function fetchLooks(token: string): Promise<LookResponse[]> {
+  const res = await fetch(`${API_BASE}/looks`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error("Failed to fetch looks");
+  const json = await res.json();
+  return json.data;
+}
+
+export async function saveLook(token: string, lookData: LookRequest): Promise<LookResponse> {
+  const res = await fetch(`${API_BASE}/looks`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(lookData),
+  });
+  if (!res.ok) throw new Error("Failed to save look");
+  const json = await res.json();
+  return json.data;
+}
+
+export async function toggleLikeLook(token: string, lookId: string): Promise<LookResponse> {
+  const res = await fetch(`${API_BASE}/looks/${lookId}/like`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error("Failed to like look");
+  const json = await res.json();
+  return json.data;
+}
+
+export async function deleteLook(token: string, lookId: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/looks/${lookId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error("Failed to delete look");
+}
+
+export async function uploadAvatar(token: string, file: File): Promise<string> {
+  const form = new FormData();
+  form.append("file", file);
+  const res = await fetch(`${API_BASE}/uploads`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: form,
+  });
+  if (!res.ok) throw new Error("Failed to upload avatar");
+  const json = await res.json();
+  return json.data.url; // e.g. /public/uploads/general/filename.png
+}
+
