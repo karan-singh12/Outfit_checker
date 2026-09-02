@@ -23,6 +23,21 @@ async function fileToDataUri(file: File): Promise<string> {
   return `data:${file.type};base64,${base64}`;
 }
 
+/** Download an image from a URL and convert it to a base64 data URI server-side */
+async function downloadToDataUri(url: string): Promise<string> {
+  const res = await fetch(url, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    },
+    signal: AbortSignal.timeout(15000),
+  });
+  if (!res.ok) throw new Error(`Could not download image from ${url} (HTTP ${res.status})`);
+  const contentType = res.headers.get("content-type") ?? "image/jpeg";
+  const buffer = await res.arrayBuffer();
+  const base64 = Buffer.from(buffer).toString("base64");
+  return `data:${contentType};base64,${base64}`;
+}
+
 /** Derive a plain-language garment description from the avatar / body context  */
 function buildGarmentDescription(
   avatarType: string,
@@ -100,6 +115,7 @@ export async function POST(req: NextRequest) {
   const selfieFile = formData.get("selfie") as File | null;
   const outfitFile = formData.get("outfit") as File | null;
   const garmentUrl = (formData.get("garmentUrl") as string) ?? "";
+  const selfieUrl = (formData.get("selfieUrl") as string) ?? "";
   const avatarType = (formData.get("avatarType") as string) ?? "person";
   const age = (formData.get("age") as string) ?? "25";
   const heightCm = (formData.get("heightCm") as string) ?? "170";
@@ -109,8 +125,8 @@ export async function POST(req: NextRequest) {
     | "lower_body"
     | "dresses";
 
-  if (!selfieFile || selfieFile.size === 0) {
-    return NextResponse.json({ error: "selfie image is required." }, { status: 400 });
+  if ((!selfieFile || selfieFile.size === 0) && !selfieUrl) {
+    return NextResponse.json({ error: "selfie image or selfieUrl is required." }, { status: 400 });
   }
   // Require either an uploaded outfit file OR a garmentUrl
   if ((!outfitFile || outfitFile.size === 0) && !garmentUrl) {
@@ -121,25 +137,22 @@ export async function POST(req: NextRequest) {
   let humanDataUri: string;
   let garmDataUri: string;
   try {
-    // If a garmentUrl was provided instead of an uploaded file, download it server-side
+    // Convert garment image
     if (garmentUrl && (!outfitFile || outfitFile.size === 0)) {
-      const garmentRes = await fetch(garmentUrl, {
-        headers: {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        },
-        signal: AbortSignal.timeout(15000),
-      });
-      if (!garmentRes.ok) throw new Error(`Could not download garment image (HTTP ${garmentRes.status})`);
-      const contentType = garmentRes.headers.get("content-type") ?? "image/jpeg";
-      const buffer = await garmentRes.arrayBuffer();
-      const base64 = Buffer.from(buffer).toString("base64");
-      garmDataUri = `data:${contentType};base64,${base64}`;
+      garmDataUri = await downloadToDataUri(garmentUrl);
     } else {
       garmDataUri = await fileToDataUri(outfitFile!);
     }
-    humanDataUri = await fileToDataUri(selfieFile);
-  } catch {
-    return NextResponse.json({ error: "Failed to read uploaded images." }, { status: 500 });
+
+    // Convert selfie/base image
+    if (selfieUrl && (!selfieFile || selfieFile.size === 0)) {
+      humanDataUri = await downloadToDataUri(selfieUrl);
+    } else {
+      humanDataUri = await fileToDataUri(selfieFile!);
+    }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Failed to read or download input images.";
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 
   // 4. Create Replicate prediction

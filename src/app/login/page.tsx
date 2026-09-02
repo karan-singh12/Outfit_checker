@@ -14,7 +14,6 @@ export default function LoginPage() {
   // Clear errors on mount
   useEffect(() => {
     clearError();
-    // Redirect if already logged in
     if (user) {
       router.push("/profile");
     }

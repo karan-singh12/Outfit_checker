@@ -1,25 +1,26 @@
 "use client";
-import { useState, useCallback, useEffect, lazy, Suspense } from "react";
-import { generateOutfitTryOn, fetchGarmentFromUrl, tryOnFromUrl, saveLook } from "../../services/api";
+import { useState, useCallback, useEffect } from "react";
+import { fetchGarmentFromUrl, saveLook } from "../../services/api";
 import type { AvatarBodyProfile, AvatarType } from "../../components/AvatarSelector";
-import { CategoryIcon } from "../wardrobe/page";
-import dynamic from "next/dynamic";
+import { CategoryIcon, type Category } from "../wardrobe/page";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "next/navigation";
 
-// Dynamically import 3D components (client-only)
-const AvatarViewer3D = dynamic(
-  () => import("../../components/AvatarViewer3D").then(m => ({ default: m.AvatarViewer3D })),
-  { ssr: false, loading: () => <div className="avatar-3d-loading"><div className="rpm-spinner" /><p>Loading 3D…</p></div> }
-);
-const ReadyPlayerMeCreator = dynamic(
-  () => import("../../components/ReadyPlayerMeCreator").then(m => ({ default: m.ReadyPlayerMeCreator })),
-  { ssr: false }
-);
+/* ── Helper to convert base64 data URL back to File ── */
+function dataURLtoFile(dataurl: string, filename: string) {
+  const arr = dataurl.split(',');
+  const mime = arr[0].match(/:(.*?);/)![1];
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new File([u8arr], filename, { type: mime });
+}
 
-/* ── Types ─────────────────────────────────────────────────────────────────── */
-type CatTab = "tops"|"bottoms"|"dresses"|"outerwear"|"footwear"|"bags"|"jewellery"|"eyewear"|"makeup";
-type GarmentCat = "upper_body"|"lower_body"|"dresses";
+/* ── Types ── */
+type CatTab = "model"|"tops"|"bottoms"|"dresses"|"outerwear"|"footwear"|"bags"|"jewellery"|"eyewear"|"makeup";
 
 interface WardrobeItem { id: string; name: string; image: string; color: string; category: CatTab; }
 
@@ -36,8 +37,8 @@ interface CurrentLook {
   eyeshadow: string | null;
 }
 
-/* ── Mock wardrobe items per category with high-quality generated images ──── */
-const WARDROBE: Record<CatTab, WardrobeItem[]> = {
+/* ── Mock wardrobe items ── */
+const WARDROBE: Record<Exclude<CatTab, "model" | "makeup">, WardrobeItem[]> = {
   tops:      [{ id:"t1",name:"White Oxford",image:"/images/white_oxford.png",color:"#f5f5f5",category:"tops" },{ id:"t2",name:"Graphic Tee",image:"/images/graphic_tee.png",color:"#1e3a5f",category:"tops" },{ id:"t3",name:"Silk Blouse",image:"/images/silk_blouse.png",color:"#fbbf24",category:"tops" }],
   bottoms:   [{ id:"b1",name:"Black Jeans",image:"/images/black_jeans.png",color:"#111",category:"bottoms" },{ id:"b2",name:"Velvet Skirt",image:"/images/velvet_skirt.png",color:"#7c3aed",category:"bottoms" },{ id:"b3",name:"Linen Trousers",image:"/images/black_jeans.png",color:"#d4a843",category:"bottoms" }],
   dresses:   [{ id:"d1",name:"Floral Maxi",image:"/images/floral_dress.png",color:"#f472b6",category:"dresses" },{ id:"d2",name:"Satin Slip",image:"/images/satin_dress.png",color:"#fbbf24",category:"dresses" },{ id:"d3",name:"Little Black Dress",image:"/images/little_black_dress.png",color:"#1a1a1a",category:"dresses" }],
@@ -46,10 +47,10 @@ const WARDROBE: Record<CatTab, WardrobeItem[]> = {
   bags:      [{ id:"bg1",name:"Leather Tote",image:"/images/leather_tote.png",color:"#92400e",category:"bags" },{ id:"bg2",name:"Mini Crossbody",image:"/images/leather_tote.png",color:"#000",category:"bags" }],
   jewellery: [{ id:"j1",name:"Pearl Necklace",image:"/images/pearl_necklace.png",color:"#fde68a",category:"jewellery" },{ id:"j2",name:"Gold Hoops",image:"/images/pearl_necklace.png",color:"#f59e0b",category:"jewellery" }],
   eyewear:   [{ id:"e1",name:"Cat-Eye Sunnies",image:"/images/sunglasses.png",color:"#000",category:"eyewear" },{ id:"e2",name:"Round Frames",image:"/images/sunglasses.png",color:"#92400e",category:"eyewear" }],
-  makeup:    [],
 };
 
 const CAT_TABS: { id: CatTab; label: string }[] = [
+  { id:"model",     label:"AI Model" },
   { id:"tops",      label:"Tops"     },
   { id:"bottoms",   label:"Bottoms"  },
   { id:"dresses",   label:"Dresses"  },
@@ -64,7 +65,7 @@ const CAT_TABS: { id: CatTab; label: string }[] = [
 const LIPSTICK_COLORS = ["#dc143c","#c71585","#8b0000","#ff6b6b","#e75480","#b22222","#ff4500","#d2691e","#cd853f","#f4a460","#ff69b4","#db7093","#c0392b","#922b21","#76448a"];
 const EYESHADOW_COLORS = ["#8b008b","#4b0082","#2c3e50","#1a237e","#006064","#004d40","#1b5e20","#33691e","#f57f17","#e65100","#bf360c","#795548","#9e9e9e","#000000","#ffffff"];
 
-const LOOK_SLOTS: { key: keyof CurrentLook; label: string; cat: CatTab }[] = [
+const LOOK_SLOTS: { key: keyof CurrentLook; label: string; cat: Category }[] = [
   { key:"top",       label:"Top",        cat:"tops"     },
   { key:"bottom",    label:"Bottom",      cat:"bottoms"  },
   { key:"dress",     label:"Dress",        cat:"dresses"  },
@@ -76,11 +77,12 @@ const LOOK_SLOTS: { key: keyof CurrentLook; label: string; cat: CatTab }[] = [
 ];
 
 const PROGRESS_MSGS = ["Analysing your look…","Fitting outfit to body…","Rendering fabric details…","Almost done…"];
+const MODEL_PROGRESS_MSGS = ["Generating model base…", "Synthesizing facial features…", "Polishing textures & background…", "Optimizing digital twin…"];
 
 export default function StudioPage() {
   const { token } = useAuth();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<CatTab>("tops");
+  const [activeTab, setActiveTab] = useState<CatTab>("model");
   const [look, setLook] = useState<CurrentLook>({ top:null,bottom:null,dress:null,outerwear:null,shoes:null,bag:null,jewellery:null,eyewear:null,lipstick:null,eyeshadow:null });
   const [selectedItem, setSelectedItem] = useState<Record<string,string>>({});
   const [selfieFile, setSelfieFile] = useState<File | null>(null);
@@ -89,10 +91,17 @@ export default function StudioPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [genError, setGenError] = useState<string | null>(null);
   const [progressPhase, setProgressPhase] = useState(0);
-  const [view, setView] = useState<"front"|"back"|"side">("front");
-  const [avatarGender, setAvatarGender] = useState<"man"|"woman">("man");
-  const [avatarUrl, setAvatarUrl]       = useState<string | null>(null);
-  const [showRPM, setShowRPM]           = useState(false);
+
+  // AI Base Model Generation states
+  const [isGeneratingModel, setIsGeneratingModel] = useState(false);
+  const [modelGender, setModelGender] = useState<"female"|"male">("female");
+  const [modelAge, setModelAge] = useState("25");
+  const [modelEthnicity, setModelEthnicity] = useState("East Asian");
+  const [modelStyle, setModelStyle] = useState("casual clothing");
+  const [modelBackground, setModelBackground] = useState("modern studio background");
+  const [customModelPrompt, setCustomModelPrompt] = useState("");
+  const [aiBaseImageUrl, setAiBaseImageUrl] = useState<string | null>(null);
+  const [bodyProfile, setBodyProfile] = useState<AvatarBodyProfile>({ age: 25, heightCm: 170, weightKg: 65 });
 
   // Look saving states
   const [showSaveModal, setShowSaveModal] = useState(false);
@@ -107,19 +116,52 @@ export default function StudioPage() {
   const [isFetching, setIsFetching] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
+  // On mount: Load onboarding metrics/selfie if stored in sessionStorage
+  useEffect(() => {
+    const savedSelfie = sessionStorage.getItem("setup_selfie_data");
+    if (savedSelfie) {
+      if (savedSelfie.startsWith("data:")) {
+        try {
+          const file = dataURLtoFile(savedSelfie, "selfie.jpg");
+          setSelfieFile(file);
+          setSelfiePreview(savedSelfie);
+        } catch (e) {
+          console.error("Failed to parse saved selfie file", e);
+        }
+      } else {
+        setAiBaseImageUrl(savedSelfie);
+      }
+    }
+
+    const savedProfile = sessionStorage.getItem("setup_profile");
+    if (savedProfile) {
+      try {
+        const profile = JSON.parse(savedProfile);
+        setBodyProfile(profile);
+        if (profile.age) setModelAge(String(profile.age));
+      } catch (e) {
+        console.error("Failed to parse saved profile metrics", e);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     if (!selfieFile) { setSelfiePreview(null); return; }
-    const url = URL.createObjectURL(selfieFile);
-    setSelfiePreview(url);
-    return () => URL.revokeObjectURL(url);
+    if (selfieFile instanceof File) {
+      const url = URL.createObjectURL(selfieFile);
+      setSelfiePreview(url);
+      return () => URL.revokeObjectURL(url);
+    }
   }, [selfieFile]);
 
   useEffect(() => {
-    if (!isGenerating) { setProgressPhase(0); return; }
-    let i = 0;
-    const id = setInterval(() => { i = (i+1) % PROGRESS_MSGS.length; setProgressPhase(i); }, 3000);
+    if (!isGenerating && !isGeneratingModel) { setProgressPhase(0); return; }
+    const limit = isGenerating ? PROGRESS_MSGS.length : MODEL_PROGRESS_MSGS.length;
+    const id = setInterval(() => {
+      setProgressPhase((prev) => (prev + 1) % limit);
+    }, 3000);
     return () => clearInterval(id);
-  }, [isGenerating]);
+  }, [isGenerating, isGeneratingModel]);
 
   const selectItem = (item: WardrobeItem) => {
     setSelectedItem((prev) => {
@@ -168,8 +210,46 @@ export default function StudioPage() {
     finally { setIsFetching(false); }
   }, [outfitUrl]);
 
+  /* ── AI Base Model Generation Handler ── */
+  const handleGenerateModel = async () => {
+    setGenError(null);
+    setIsGeneratingModel(true);
+    setResultImage(null);
+    try {
+      const res = await fetch("/api/generate-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          gender: modelGender,
+          age: modelAge,
+          style: modelStyle,
+          background: modelBackground,
+          ethnicity: modelEthnicity,
+          customPrompt: customModelPrompt
+        })
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || `Server error ${res.status}`);
+      }
+
+      const data = await res.json();
+      setAiBaseImageUrl(data.resultImageUrl);
+      setSelfieFile(null);
+      setSelfiePreview(null);
+      
+      sessionStorage.setItem("setup_selfie_data", data.resultImageUrl);
+    } catch (e) {
+      setGenError(e instanceof Error ? e.message : "AI model generation failed");
+    } finally {
+      setIsGeneratingModel(false);
+    }
+  };
+
+  /* ── Virtual Try-On Handler ── */
   const handleGenerate = async () => {
-    if (!selfieFile) { setGenError("Upload your photo first in the Upload section."); return; }
+    if (!selfieFile && !aiBaseImageUrl) { setGenError("Upload your photo or generate an AI model first."); return; }
     const activeOutfitItem = look.top || look.dress;
     if (!activeOutfitItem && !garmentImageUrl) { setGenError("Select or fetch a garment first."); return; }
 
@@ -177,18 +257,55 @@ export default function StudioPage() {
     try {
       let response;
       if (garmentImageUrl) {
-        response = await tryOnFromUrl({ selfieFile, garmentUrl: garmentImageUrl, garmentCategory: "upper_body" });
+        const form = new FormData();
+        if (selfieFile) {
+          form.append("selfie", selfieFile);
+        } else {
+          form.append("selfieUrl", aiBaseImageUrl!);
+        }
+        form.append("garmentUrl", garmentImageUrl);
+        form.append("avatarType", modelGender);
+        form.append("age", modelAge);
+        form.append("heightCm", String(bodyProfile.heightCm));
+        form.append("weightKg", String(bodyProfile.weightKg));
+        form.append("garmentCategory", "upper_body");
+
+        const res = await fetch("/api/tryon", { method: "POST", body: form });
+        if (!res.ok) {
+          const errJson = await res.json().catch(() => ({}));
+          throw new Error(errJson.error || `Server error ${res.status}`);
+        }
+        response = await res.json();
       } else {
-        const outfitBlob = await fetch(selfiePreview!).then((r) => r.blob());
+        const outfitBlob = await fetch(activeOutfitItem!.image).then((r) => r.blob());
         const outfitFile = new File([outfitBlob], "outfit.jpg", { type: "image/jpeg" });
-        response = await generateOutfitTryOn({
-          avatarType: "female", bodyProfile: { age:25, heightCm:170, weightKg:65 },
-          selfieFile, outfitFile, garmentCategory: look.dress ? "dresses" : "upper_body",
-        });
+        
+        const form = new FormData();
+        if (selfieFile) {
+          form.append("selfie", selfieFile);
+        } else {
+          form.append("selfieUrl", aiBaseImageUrl!);
+        }
+        form.append("outfit", outfitFile);
+        form.append("avatarType", modelGender);
+        form.append("age", modelAge);
+        form.append("heightCm", String(bodyProfile.heightCm));
+        form.append("weightKg", String(bodyProfile.weightKg));
+        form.append("garmentCategory", look.dress ? "dresses" : "upper_body");
+
+        const res = await fetch("/api/tryon", { method: "POST", body: form });
+        if (!res.ok) {
+          const errJson = await res.json().catch(() => ({}));
+          throw new Error(errJson.error || `Server error ${res.status}`);
+        }
+        response = await res.json();
       }
       setResultImage(response.resultImageUrl);
-    } catch (e) { setGenError(e instanceof Error ? e.message : "Generation failed"); }
-    finally { setIsGenerating(false); }
+    } catch (e) {
+      setGenError(e instanceof Error ? e.message : "Generation failed");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleSaveLook = async () => {
@@ -218,7 +335,6 @@ export default function StudioPage() {
       "linear-gradient(135deg,#7c2d12,#92400e)"
     ];
     const randomGradient = gradients[Math.floor(Math.random() * gradients.length)];
-
     const finalImage = resultImage || look.top?.image || look.dress?.image || "/images/look_brunch.png";
 
     try {
@@ -242,21 +358,30 @@ export default function StudioPage() {
   const filledSlots = LOOK_SLOTS.filter((s) => look[s.key] !== null);
   const hasLook = filledSlots.length > 0 || look.lipstick || look.eyeshadow;
 
+  const displayBaseImage = selfiePreview || aiBaseImageUrl || (modelGender === "male" ? "/images/male_avatar.png" : "/images/female_avatar.png");
+
   return (
     <>
     <div className="studio-page">
 
-      {/* ══ LEFT — Item Picker ══════════════════════════════════════════ */}
+      {/* ══ LEFT — Item Picker & AI Model Panel ═══════════════════════════ */}
       <div className="studio-left">
         <div className="studio-left-header">
-          <p className="studio-left-title">Your Wardrobe</p>
+          <p className="studio-left-title">Virtual Studio</p>
           {/* Category tabs */}
           <div className="cat-tabs">
             {CAT_TABS.map((t) => (
               <button key={t.id} type="button" className={`cat-tab${activeTab === t.id ? " active" : ""}`}
                 onClick={() => setActiveTab(t.id)}>
                 <span className="cat-tab-icon" style={{ display: "flex", alignItems: "center" }}>
-                  <CategoryIcon id={t.id} />
+                  {t.id === "model" ? (
+                    <svg className="sidebar-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="8" r="4" />
+                      <path d="M18 21a6 6 0 0 0-12 0" />
+                    </svg>
+                  ) : (
+                    <CategoryIcon id={t.id as Category} />
+                  )}
                 </span>
                 <span className="cat-tab-label">{t.label}</span>
               </button>
@@ -264,8 +389,139 @@ export default function StudioPage() {
           </div>
         </div>
 
-        {/* ── Makeup panel ─────────────────────────────────────────── */}
-        {activeTab === "makeup" ? (
+        {/* ── AI Model Panel ─────────────────────────────────────────── */}
+        {activeTab === "model" ? (
+          <div className="makeup-panel">
+            <div className="makeup-section">
+              <p className="makeup-section-title">✨ Create AI User Image</p>
+              
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 8 }}>
+                {/* Gender selection */}
+                <div>
+                  <label className="metric-label" style={{ display: "block", marginBottom: 6 }}>Gender</label>
+                  <div className="gender-row">
+                    {(["Female", "Male"] as const).map((g) => (
+                      <button
+                        key={g}
+                        type="button"
+                        className={`gender-btn${modelGender === g.toLowerCase() ? " active" : ""}`}
+                        style={{ padding: "6px 12px", fontSize: 11 }}
+                        onClick={() => setModelGender(g.toLowerCase() as any)}
+                      >{g}</button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Age & Ethnicity */}
+                <div style={{ display: "flex", gap: 10 }}>
+                  <div style={{ flex: 1 }}>
+                    <label className="metric-label" style={{ display: "block", marginBottom: 6 }}>Age</label>
+                    <input
+                      type="number"
+                      min={15}
+                      max={70}
+                      value={modelAge}
+                      onChange={(e) => setModelAge(e.target.value)}
+                      className="metric-input"
+                      style={{ width: "100%", background: "var(--bg-soft)", border: "1px solid var(--card-border)", borderRadius: "var(--r-xs)", color: "var(--text)", padding: "6px 10px", fontSize: 12 }}
+                    />
+                  </div>
+                  <div style={{ flex: 2 }}>
+                    <label className="metric-label" style={{ display: "block", marginBottom: 6 }}>Look/Ethnicity</label>
+                    <select
+                      value={modelEthnicity}
+                      onChange={(e) => setModelEthnicity(e.target.value)}
+                      style={{ width: "100%", background: "var(--bg-soft)", border: "1px solid var(--card-border)", borderRadius: "var(--r-xs)", color: "var(--text)", padding: "6px 10px", fontSize: 12, outline: "none" }}
+                    >
+                      <option value="South Asian">South Asian</option>
+                      <option value="East Asian">East Asian</option>
+                      <option value="Caucasian">Caucasian</option>
+                      <option value="Latino">Latino</option>
+                      <option value="African">African</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Clothing style preset */}
+                <div>
+                  <label className="metric-label" style={{ display: "block", marginBottom: 6 }}>Clothing Style</label>
+                  <select
+                    value={modelStyle}
+                    onChange={(e) => setModelStyle(e.target.value)}
+                    style={{ width: "100%", background: "var(--bg-soft)", border: "1px solid var(--card-border)", borderRadius: "var(--r-xs)", color: "var(--text)", padding: "6px 10px", fontSize: 12, outline: "none" }}
+                  >
+                    <option value="casual clothing">Casual (T-Shirt & Jeans)</option>
+                    <option value="formal business blazer suit">Professional (Blazer & Suit)</option>
+                    <option value="stylish athletic activewear">Sporty (Activewear)</option>
+                    <option value="elegant cocktail dress">Elegant (Evening Dress)</option>
+                    <option value="oversized streetwear hoodie cargo pants">Streetwear (Hoodie & Cargos)</option>
+                  </select>
+                </div>
+
+                {/* Background preset */}
+                <div>
+                  <label className="metric-label" style={{ display: "block", marginBottom: 6 }}>Background Scene</label>
+                  <select
+                    value={modelBackground}
+                    onChange={(e) => setModelBackground(e.target.value)}
+                    style={{ width: "100%", background: "var(--bg-soft)", border: "1px solid var(--card-border)", borderRadius: "var(--r-xs)", color: "var(--text)", padding: "6px 10px", fontSize: 12, outline: "none" }}
+                  >
+                    <option value="modern clean photo studio background">Modern Studio</option>
+                    <option value="solid warm grey backdrop background">Solid Color Backplate</option>
+                    <option value="minimalist cozy loft interior background">Minimalist Loft</option>
+                    <option value="sunlit blurry city street background">City Street</option>
+                    <option value="lush blurred background garden backdrop">Lush Outdoor Garden</option>
+                  </select>
+                </div>
+
+                {/* Custom description prompt */}
+                <div>
+                  <label className="metric-label" style={{ display: "block", marginBottom: 6 }}>Custom Prompt (Optional)</label>
+                  <textarea
+                    placeholder="Enter custom image generation instructions..."
+                    value={customModelPrompt}
+                    onChange={(e) => setCustomModelPrompt(e.target.value)}
+                    style={{ width: "100%", height: 50, background: "var(--bg-soft)", border: "1px solid var(--card-border)", borderRadius: "var(--r-xs)", color: "var(--text)", padding: "6px 10px", fontSize: 11, outline: "none", resize: "none" }}
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  className="btn btn-gradient btn-sm"
+                  style={{ width: "100%", padding: "10px", marginTop: 4 }}
+                  onClick={handleGenerateModel}
+                  disabled={isGeneratingModel}
+                >
+                  {isGeneratingModel ? <><span className="spinner spinner-sm" /> Generating Model…</> : "✨ Generate AI Model"}
+                </button>
+              </div>
+            </div>
+
+            <div className="makeup-section" style={{ borderTop: "1px solid var(--card-border)", paddingTop: 16, marginTop: 12 }}>
+              <p className="makeup-section-title">📁 Or Upload Photo</p>
+              <label className="studio-upload-btn" style={{ width: "100%", marginTop: 8 }}>
+                <input type="file" accept="image/*" style={{ display:"none" }} onChange={(e) => {
+                  const f = e.target.files?.[0] ?? null;
+                  setSelfieFile(f);
+                  if (f) setAiBaseImageUrl(null); // Clear generated model URL if user uploads photo
+                }} />
+                {selfiePreview ? (
+                  <img src={selfiePreview} alt="you" style={{ width:32, height:32, borderRadius:"50%", objectFit:"cover", border:"2px solid var(--purple)", flexShrink:0 }} />
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink:0, color:"var(--purple)" }}>
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                  </svg>
+                )}
+                <span style={{ color:"var(--purple)", fontWeight:600, fontSize: 11 }}>
+                  {selfiePreview ? "Photo uploaded successfully" : "Upload your selfie photo"}
+                </span>
+              </label>
+            </div>
+          </div>
+        ) : activeTab === "makeup" ? (
+          /* ── Makeup panel ─────────────────────────────────────────── */
           <div className="makeup-panel">
             <div className="makeup-section">
               <p className="makeup-section-title">💋 Lipstick</p>
@@ -320,13 +576,13 @@ export default function StudioPage() {
         ) : (
           /* ── Clothing / accessory items ─────────────────────────── */
           <div className="studio-item-list">
-            {(WARDROBE[activeTab] ?? []).length === 0 ? (
+            {(WARDROBE[activeTab as Exclude<CatTab, "model" | "makeup">] ?? []).length === 0 ? (
               <div style={{ gridColumn:"1/-1", textAlign:"center", padding:"30px 10px" }}>
                 <div style={{ fontSize:36, marginBottom:10 }}>🛍️</div>
                 <p style={{ fontSize:12, color:"var(--muted)" }}>No {activeTab} in wardrobe yet</p>
               </div>
             ) : (
-              (WARDROBE[activeTab] ?? []).map((item) => {
+              (WARDROBE[activeTab as Exclude<CatTab, "model" | "makeup">] ?? []).map((item) => {
                 const isSelected = selectedItem[item.category] === item.id;
                 const catEmojis: Record<string, string> = {
                   tops: "👕", bottoms: "👖", dresses: "👗", outerwear: "🧥",
@@ -359,157 +615,108 @@ export default function StudioPage() {
                 );
               })
             )}
-
-            {/* Upload selfie mini-zone */}
-            {activeTab === "tops" && (
-              <label className="studio-upload-btn">
-                <input type="file" accept="image/*" style={{ display:"none" }} onChange={(e) => setSelfieFile(e.target.files?.[0] ?? null)} />
-                {selfiePreview ? (
-                  <img src={selfiePreview} alt="you" style={{ width:32, height:32, borderRadius:"50%", objectFit:"cover", border:"2px solid var(--purple)", flexShrink:0 }} />
-                ) : (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink:0, color:"var(--purple)" }}>
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="17 8 12 3 7 8" />
-                    <line x1="12" y1="3" x2="12" y2="15" />
-                  </svg>
-                )}
-                <span style={{ color:"var(--purple)", fontWeight:600 }}>
-                  {selfiePreview ? "Photo uploaded" : "Upload your selfie for AI try-on"}
-                </span>
-                {selfiePreview && (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink:0, marginLeft:"auto" }}>
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                )}
-              </label>
-            )}
           </div>
         )}
       </div>
 
-      {/* ══ CENTER — Avatar Stage ═══════════════════════════════════════ */}
+      {/* ══ CENTER — Avatar Stage (2D Canvas Redesign) ══════════════════ */}
       <div className="studio-center">
-        {/* View switcher */}
-        <div className="studio-center-toolbar">
-          {(["front","back","side"] as const).map((v) => (
-            <button key={v} type="button" className={`view-btn${view === v ? " active" : ""}`}
-              onClick={() => setView(v)}>
-              {v.charAt(0).toUpperCase() + v.slice(1)}
-            </button>
-          ))}
+        <div className="studio-center-toolbar" style={{ top: 16 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-soft)", textTransform: "uppercase", padding: "4px 12px" }}>
+            {resultImage ? "Try-On Result" : selfieFile ? "Your Photo Twin" : "AI Base Model"}
+          </span>
         </div>
 
-        {/* Loading overlay */}
+        {/* Loading overlay for AI try-on */}
         {isGenerating && (
-          <div className="studio-loading">
+          <div className="studio-loading" style={{ zIndex: 100 }}>
             <div className="spinner spinner-lg" />
             <p className="studio-loading-title">{PROGRESS_MSGS[progressPhase]}</p>
             <p className="studio-loading-sub">Usually 30–90 seconds</p>
           </div>
         )}
 
-        {/* Avatar Stage — 3D Canvas */}
+        {/* Loading overlay for Base Model Gen */}
+        {isGeneratingModel && (
+          <div className="studio-loading" style={{ zIndex: 100 }}>
+            <div className="spinner spinner-lg" style={{ borderColor: "rgba(168,85,247,0.12)", borderTopColor: "var(--purple)" }} />
+            <p className="studio-loading-title">{MODEL_PROGRESS_MSGS[progressPhase]}</p>
+            <p className="studio-loading-sub">Generating with FLUX Schnell · ~5s</p>
+          </div>
+        )}
+
+        {/* 2D Digital Twin Stage */}
         <div className="studio-avatar-stage">
-          <div className="avatar-container" style={{ position:"relative" }}>
-
-            {/* Clothing label tags */}
-            {!resultImage && (
-              <>
-                {look.top && (
-                  <div className="avatar-clothing-tag" style={{ top:"20%", left:"4%", zIndex:20 }}>
-                    <span className="avatar-tag-dot" style={{ background:look.top.color }} />
-                    <span style={{ fontSize:10, fontWeight:700, color:"#fff" }}>{look.top.name}</span>
-                  </div>
-                )}
-                {look.dress && (
-                  <div className="avatar-clothing-tag" style={{ top:"32%", left:"4%", zIndex:20 }}>
-                    <span className="avatar-tag-dot" style={{ background:look.dress.color }} />
-                    <span style={{ fontSize:10, fontWeight:700, color:"#fff" }}>{look.dress.name}</span>
-                  </div>
-                )}
-                {look.bottom && (
-                  <div className="avatar-clothing-tag" style={{ top:"60%", right:"4%", zIndex:20 }}>
-                    <span className="avatar-tag-dot" style={{ background:look.bottom.color }} />
-                    <span style={{ fontSize:10, fontWeight:700, color:"#fff" }}>{look.bottom.name}</span>
-                  </div>
-                )}
-                {look.shoes && (
-                  <div className="avatar-clothing-tag" style={{ bottom:"14%", right:"4%", zIndex:20 }}>
-                    <span className="avatar-tag-dot" style={{ background:look.shoes.color }} />
-                    <span style={{ fontSize:10, fontWeight:700, color:"#fff" }}>{look.shoes.name}</span>
-                  </div>
-                )}
-                {look.outerwear && (
-                  <div className="avatar-clothing-tag" style={{ top:"18%", right:"4%", zIndex:20 }}>
-                    <span className="avatar-tag-dot" style={{ background:look.outerwear.color }} />
-                    <span style={{ fontSize:10, fontWeight:700, color:"#fff" }}>{look.outerwear.name}</span>
-                  </div>
-                )}
-              </>
-            )}
-
+          <div className="avatar-container" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+            
             {resultImage ? (
               <img src={resultImage} alt="AI try-on result" className="avatar-result-img" />
             ) : (
-              /* ── 3D Canvas ── */
-              <div style={{ position:"absolute", inset:0 }}>
-                <AvatarViewer3D
-                  avatarUrl={avatarUrl}
-                  gender={avatarGender}
-                  clothingColors={{
-                    top:       look.top?.color       ?? null,
-                    bottom:    look.bottom?.color    ?? null,
-                    dress:     look.dress?.color     ?? null,
-                    outerwear: look.outerwear?.color ?? null,
-                    shoes:     look.shoes?.color     ?? null,
+              <div style={{ position: "relative", width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <img
+                  src={displayBaseImage}
+                  alt="Base digital twin model"
+                  className="avatar-result-img"
+                  style={{
+                    maxHeight: "92%",
+                    maxWidth: "90%",
+                    borderRadius: "var(--r-md)",
+                    boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)",
+                    border: "1px solid var(--card-border)",
+                    objectFit: "contain"
                   }}
                 />
+
+                {/* Interactive Wardrobe Layering Labels */}
+                <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+                  {look.top && (
+                    <div className="avatar-clothing-tag" style={{ top: "25%", left: "10%", pointerEvents: "auto" }}>
+                      <span className="avatar-tag-dot" style={{ background: look.top.color }} />
+                      <span style={{ fontSize: 10, fontWeight: 700, color: "#fff" }}>👕 Top: {look.top.name}</span>
+                    </div>
+                  )}
+                  {look.dress && (
+                    <div className="avatar-clothing-tag" style={{ top: "35%", left: "10%", pointerEvents: "auto" }}>
+                      <span className="avatar-tag-dot" style={{ background: look.dress.color }} />
+                      <span style={{ fontSize: 10, fontWeight: 700, color: "#fff" }}>👗 Dress: {look.dress.name}</span>
+                    </div>
+                  )}
+                  {look.bottom && (
+                    <div className="avatar-clothing-tag" style={{ top: "58%", right: "10%", pointerEvents: "auto" }}>
+                      <span className="avatar-tag-dot" style={{ background: look.bottom.color }} />
+                      <span style={{ fontSize: 10, fontWeight: 700, color: "#fff" }}>👖 Bottom: {look.bottom.name}</span>
+                    </div>
+                  )}
+                  {look.shoes && (
+                    <div className="avatar-clothing-tag" style={{ bottom: "16%", left: "15%", pointerEvents: "auto" }}>
+                      <span className="avatar-tag-dot" style={{ background: look.shoes.color }} />
+                      <span style={{ fontSize: 10, fontWeight: 700, color: "#fff" }}>👟 Shoes: {look.shoes.name}</span>
+                    </div>
+                  )}
+                  {look.outerwear && (
+                    <div className="avatar-clothing-tag" style={{ top: "22%", right: "10%", pointerEvents: "auto" }}>
+                      <span className="avatar-tag-dot" style={{ background: look.outerwear.color }} />
+                      <span style={{ fontSize: 10, fontWeight: 700, color: "#fff" }}>🧥 Outer: {look.outerwear.name}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
-
-            {/* ── Gender selector (bottom-center) ── */}
-            {!resultImage && (
-              <div className="avatar-gender-selector" style={{ zIndex:20 }}>
-                <button id="gender-man-btn" className={`gender-btn${avatarGender==="man"?" active":""}`}
-                  onClick={() => setAvatarGender("man")}>
-                  <span className="gender-circle" style={{
-                    background:  avatarGender==="man" ? "#10b981" : "transparent",
-                    borderColor: avatarGender==="man" ? "#10b981" : "rgba(255,255,255,0.25)"
-                  }} />
-                  <span>MAN</span>
-                </button>
-                <button id="gender-woman-btn" className={`gender-btn${avatarGender==="woman"?" active":""}`}
-                  onClick={() => setAvatarGender("woman")}>
-                  <span className="gender-circle" style={{
-                    background:  avatarGender==="woman" ? "rgba(255,220,230,0.8)" : "transparent",
-                    borderColor: avatarGender==="woman" ? "#f472b6" : "rgba(255,255,255,0.25)"
-                  }} />
-                  <span>WOMAN</span>
-                </button>
-              </div>
-            )}
-
-            {/* Ready Player Me avatar creation is disabled due to network resolution limits */}
-
           </div>
         </div>
 
-        {/* Error */}
+        {/* Error message */}
         {genError && (
-          <div style={{ padding:"10px 20px", background:"rgba(239,68,68,0.1)", borderTop:"1px solid rgba(239,68,68,0.2)", color:"var(--danger)", fontSize:12, display:"flex", gap:8, alignItems:"center" }}>
+          <div style={{ padding:"10px 20px", background:"rgba(239,68,68,0.1)", borderTop:"1px solid rgba(239,68,68,0.2)", color:"var(--danger)", fontSize:12, display:"flex", gap:8, alignItems:"center", zIndex: 10 }}>
             ⚠ {genError}
           </div>
         )}
 
-        {/* Bottom toolbar */}
+        {/* Center panel actions */}
         <div className="studio-center-bottom">
-          <button type="button" className="btn-icon" title="Undo" onClick={() => {}}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
-          </button>
-
-          <button type="button" className="btn btn-gradient" style={{ flex:1 }} onClick={handleGenerate} disabled={isGenerating || !selfieFile}>
+          <button type="button" className="btn btn-gradient" style={{ flex:1 }} onClick={handleGenerate} disabled={isGenerating || isGeneratingModel || (!selfieFile && !aiBaseImageUrl)}>
             {isGenerating
-              ? <><span className="spinner spinner-sm" style={{ borderColor:"rgba(255,255,255,0.25)", borderTopColor:"#fff" }} /> Generating…</>
+              ? <><span className="spinner spinner-sm" style={{ borderColor:"rgba(255,255,255,0.25)", borderTopColor:"#fff" }} /> Generating AI Look…</>
               : "Generate AI Look"}
           </button>
 
@@ -540,7 +747,7 @@ export default function StudioPage() {
             return (
               <div key={slot.key} className={`look-slot${item ? " filled" : ""}`}>
                 <span className="look-slot-icon" style={{ display: "flex", alignItems: "center" }}>
-                  <CategoryIcon id={slot.cat} />
+                  <CategoryIcon id={slot.cat as any} />
                 </span>
                 <span className="look-slot-label">{item ? item.name : slot.label}</span>
                 {item ? (
@@ -671,17 +878,6 @@ export default function StudioPage() {
           </div>
         </div>
       </div>
-    )}
-
-    {/* ══ Ready Player Me Modal ════════════════════════════════════ */}
-    {showRPM && (
-      <ReadyPlayerMeCreator
-        onAvatarCreated={(url) => {
-          setAvatarUrl(url);
-          setShowRPM(false);
-        }}
-        onClose={() => setShowRPM(false)}
-      />
     )}
     </>
   );

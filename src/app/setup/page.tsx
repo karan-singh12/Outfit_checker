@@ -35,6 +35,26 @@ export default function SetupPage() {
     return () => URL.revokeObjectURL(url);
   }, [selfieFile]);
 
+  const handleBuildTwin = () => {
+    const profile = {
+      age: Number(age) || 25,
+      heightCm: Number(height) || 170,
+      weightKg: Number(weight) || 65
+    };
+    sessionStorage.setItem("setup_profile", JSON.stringify(profile));
+
+    if (selfieFile) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        sessionStorage.setItem("setup_selfie_data", reader.result as string);
+        setStep(3);
+      };
+      reader.readAsDataURL(selfieFile);
+    } else {
+      setStep(3);
+    }
+  };
+
   // Animate building steps
   useEffect(() => {
     if (step !== 3) return;
@@ -203,7 +223,7 @@ export default function SetupPage() {
 
             <div style={{ marginTop: 28, display: "flex", gap: 12 }}>
               <button type="button" className="btn btn-ghost" style={{ flex: 1 }} onClick={() => setStep(1)}>← Back</button>
-              <button type="button" className="btn btn-gradient" style={{ flex: 2 }} onClick={() => setStep(3)}>
+              <button type="button" className="btn btn-gradient" style={{ flex: 2 }} onClick={handleBuildTwin}>
                 Build My Twin ✨
               </button>
             </div>

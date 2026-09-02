@@ -10,8 +10,8 @@ const FlowWave = dynamic(
 );
 
 /* ── scrolling items ── */
-const MARQUEE = ["AI TRY-ON", "ANY STORE", "3D AVATAR", "MAKEUP", "REAL-TIME", "SAVE LOOKS", "WARDROBE", "SELFIE-POWERED"];
-const STATUS  = ["AVATAR LOADED", "OUTFIT FITTED", "FABRIC RENDERED", "LOOK SAVED", "API ONLINE", "MIRROR ACTIVE"];
+const MARQUEE = ["AI TRY-ON", "ANY STORE", "AI MODELS", "MAKEUP", "REAL-TIME", "SAVE LOOKS", "WARDROBE", "SELFIE-POWERED"];
+const STATUS  = ["MODEL GENERATED", "OUTFIT FITTED", "FABRIC RENDERED", "LOOK SAVED", "API ONLINE", "MIRROR ACTIVE"];
 
 /* ── Tab definitions ── */
 const TABS = [
@@ -57,22 +57,22 @@ const TABS = [
   },
   {
     id: "studio",
-    label: "3D Studio",
-    title: "Real-time 3D dressing room",
+    label: "AI Studio",
+    title: "AI model dressing room",
     bullets: [
-      "Real-time 3D avatar with 6 mesh body zone classification",
-      "Drag to rotate, scroll to zoom your full avatar",
-      "Live color swap with zero latency on any zone",
-      "Dedicated vanity mirror, wardrobe and lighting scene",
+      "Generate custom base models of any gender, age & ethnicity with AI",
+      "Upload your own selfie for a fully personalized try-on base",
+      "Interactive layering visual tags show your selected wardrobe combinations",
+      "Save looks & apply cosmetics instantly with real-time preview",
     ],
     code: [
-      { t: "comment", v: "// AvatarViewer3D.tsx" },
-      { t: "key", v: "renderer:", p: " WebGLRenderer" },
-      { t: "key", v: "toneMapping:", p: " ACESFilmic" },
+      { t: "comment", v: "// generate-user.ts" },
+      { t: "key", v: "model:", p: " flux-schnell" },
+      { t: "key", v: "aspect_ratio:", p: " 3:4" },
       { t: "divider" },
-      { t: "ok", v: "GLB loaded · male.glb" },
-      { t: "ok", v: "6 zones classified" },
-      { t: "ok", v: "idle animation · 60fps" },
+      { t: "ok", v: "Base model generated" },
+      { t: "ok", v: "Interactive wardrobe tags active" },
+      { t: "ok", v: "Try-on pipeline ready" },
     ],
   },
   {
@@ -379,7 +379,7 @@ export default function LandingPage() {
       <section className="nf-stats-bar">
         {[
           { val:"15+",   label:"Lipstick shades" },
-          { val:"6",     label:"3D body zones" },
+          { val:"Flux",  label:"AI model gen" },
           { val:"9",     label:"Category types" },
           { val:"< 90s", label:"AI try-on time" },
         ].map(s=>(
