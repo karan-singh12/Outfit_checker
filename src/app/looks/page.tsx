@@ -143,21 +143,8 @@ export default function LooksPage() {
 
   return (
     <div className="looks-page">
-      {/* Header */}
-      <div className="looks-header">
-        <div style={{ display:"flex", alignItems:"center", gap:14 }}>
-          <div className="page-header-icon" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-              <polyline points="17 21 17 13 7 13 7 21" />
-              <polyline points="7 3 7 8 15 8" />
-            </svg>
-          </div>
-          <div>
-            <h1>Saved Looks</h1>
-            <p style={{ fontSize:13, color:"var(--muted)" }}>{looks.length} complete outfits · Open any in Studio</p>
-          </div>
-        </div>
+      {/* Action Toolbar */}
+      <div className="looks-header" style={{ justifyContent: "flex-end", marginBottom: 16 }}>
         <Link href="/studio" className="btn btn-gradient">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>

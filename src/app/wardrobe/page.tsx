@@ -284,24 +284,13 @@ export default function WardrobePage() {
 
   return (
     <div className="page-wrapper" style={{ paddingTop: 28 }}>
-      {/* Header */}
-      <div className="page-header">
-        <div className="page-header-left">
-          <div className="page-header-icon" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <CategoryIcon id="all" className="header-svg" />
-          </div>
-          <div>
-            <h1>My Wardrobe</h1>
-            <p className="page-header-sub">{items.length} items · Try them on in the Studio</p>
-          </div>
-        </div>
-        <div style={{ display: "flex", gap: 10 }}>
-          <Link href="/studio" className="btn btn-ghost btn-sm">Open Studio</Link>
-          <button type="button" className="btn btn-gradient btn-sm" onClick={() => setShowModal(true)}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Add Item
-          </button>
-        </div>
+      {/* Action Toolbar */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 10, marginBottom: 20 }}>
+        <Link href="/studio" className="btn btn-ghost btn-sm">Open Studio</Link>
+        <button type="button" className="btn btn-gradient btn-sm" onClick={() => setShowModal(true)}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Item
+        </button>
       </div>
 
       <div className="wardrobe-layout">

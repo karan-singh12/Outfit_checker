@@ -16,7 +16,13 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         <script dangerouslySetInnerHTML={{__html: `
           (function() {
             try {
-              document.documentElement.setAttribute('data-theme', 'dark');
+              var saved = localStorage.getItem('theme');
+              if (saved === 'light' || saved === 'dark') {
+                document.documentElement.setAttribute('data-theme', saved);
+              } else {
+                var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+              }
             } catch (e) {}
           })();
         `}} />
