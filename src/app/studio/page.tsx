@@ -393,7 +393,7 @@ export default function StudioPage() {
         {activeTab === "model" ? (
           <div className="makeup-panel">
             <div className="makeup-section">
-              <p className="makeup-section-title">✨ Create AI User Image</p>
+              <p className="makeup-section-title">Create AI User Image</p>
               
               <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 8 }}>
                 {/* Gender selection */}
@@ -492,13 +492,13 @@ export default function StudioPage() {
                   onClick={handleGenerateModel}
                   disabled={isGeneratingModel}
                 >
-                  {isGeneratingModel ? <><span className="spinner spinner-sm" /> Generating Model…</> : "✨ Generate AI Model"}
+                  {isGeneratingModel ? <><span className="spinner spinner-sm" /> Generating Model…</> : "Generate AI Model"}
                 </button>
               </div>
             </div>
 
             <div className="makeup-section" style={{ borderTop: "1px solid var(--card-border)", paddingTop: 16, marginTop: 12 }}>
-              <p className="makeup-section-title">📁 Or Upload Photo</p>
+              <p className="makeup-section-title">Or Upload Photo</p>
               <label className="studio-upload-btn" style={{ width: "100%", marginTop: 8 }}>
                 <input type="file" accept="image/*" style={{ display:"none" }} onChange={(e) => {
                   const f = e.target.files?.[0] ?? null;
@@ -524,7 +524,7 @@ export default function StudioPage() {
           /* ── Makeup panel ─────────────────────────────────────────── */
           <div className="makeup-panel">
             <div className="makeup-section">
-              <p className="makeup-section-title">💋 Lipstick</p>
+              <p className="makeup-section-title">Lipstick</p>
               <div className="color-swatches">
                 {LIPSTICK_COLORS.map((c) => (
                   <div key={c} className={`color-swatch${look.lipstick === c ? " active" : ""}`}
@@ -535,7 +535,7 @@ export default function StudioPage() {
             </div>
 
             <div className="makeup-section">
-              <p className="makeup-section-title">👁️ Eye Shadow</p>
+              <p className="makeup-section-title">Eye Shadow</p>
               <div className="color-swatches">
                 {EYESHADOW_COLORS.map((c) => (
                   <div key={c} className={`color-swatch${look.eyeshadow === c ? " active" : ""}`}
@@ -546,7 +546,7 @@ export default function StudioPage() {
             </div>
 
             <div className="makeup-section">
-              <p className="makeup-section-title">🌸 Blush Intensity</p>
+              <p className="makeup-section-title">Blush Intensity</p>
               <div className="intensity-row">
                 <span className="intensity-label">None</span>
                 <input type="range" className="intensity-slider" min={0} max={100} defaultValue={0} />
@@ -555,7 +555,7 @@ export default function StudioPage() {
             </div>
 
             <div className="makeup-section">
-              <p className="makeup-section-title">🔗 Try from Link</p>
+              <p className="makeup-section-title">Try from Link</p>
               <div style={{ display:"flex", gap:6, marginBottom: 8 }}>
                 <input
                   type="url"
@@ -578,16 +578,16 @@ export default function StudioPage() {
           <div className="studio-item-list">
             {(WARDROBE[activeTab as Exclude<CatTab, "model" | "makeup">] ?? []).length === 0 ? (
               <div style={{ gridColumn:"1/-1", textAlign:"center", padding:"30px 10px" }}>
-                <div style={{ fontSize:36, marginBottom:10 }}>🛍️</div>
+                <div style={{ display: "inline-flex", padding: 12, borderRadius: "50%", background: "var(--bg-soft)", color: "var(--muted)", marginBottom: 10 }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+                  </svg>
+                </div>
                 <p style={{ fontSize:12, color:"var(--muted)" }}>No {activeTab} in wardrobe yet</p>
               </div>
             ) : (
               (WARDROBE[activeTab as Exclude<CatTab, "model" | "makeup">] ?? []).map((item) => {
                 const isSelected = selectedItem[item.category] === item.id;
-                const catEmojis: Record<string, string> = {
-                  tops: "👕", bottoms: "👖", dresses: "👗", outerwear: "🧥",
-                  footwear: "👟", bags: "👜", jewellery: "📿", eyewear: "🕶️"
-                };
                 return (
                   <div
                     key={item.id}
@@ -603,7 +603,7 @@ export default function StudioPage() {
                         }}
                       />
                       <span className="item-placeholder-icon">
-                        {catEmojis[item.category] || "👕"}
+                        <CategoryIcon id={item.category as Category} />
                       </span>
                       {isSelected && <span className="studio-item-check">✓</span>}
                     </div>
@@ -672,31 +672,31 @@ export default function StudioPage() {
                   {look.top && (
                     <div className="avatar-clothing-tag" style={{ top: "25%", left: "10%", pointerEvents: "auto" }}>
                       <span className="avatar-tag-dot" style={{ background: look.top.color }} />
-                      <span style={{ fontSize: 10, fontWeight: 700, color: "#fff" }}>👕 Top: {look.top.name}</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: "#fff" }}>Top: {look.top.name}</span>
                     </div>
                   )}
                   {look.dress && (
                     <div className="avatar-clothing-tag" style={{ top: "35%", left: "10%", pointerEvents: "auto" }}>
                       <span className="avatar-tag-dot" style={{ background: look.dress.color }} />
-                      <span style={{ fontSize: 10, fontWeight: 700, color: "#fff" }}>👗 Dress: {look.dress.name}</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: "#fff" }}>Dress: {look.dress.name}</span>
                     </div>
                   )}
                   {look.bottom && (
                     <div className="avatar-clothing-tag" style={{ top: "58%", right: "10%", pointerEvents: "auto" }}>
                       <span className="avatar-tag-dot" style={{ background: look.bottom.color }} />
-                      <span style={{ fontSize: 10, fontWeight: 700, color: "#fff" }}>👖 Bottom: {look.bottom.name}</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: "#fff" }}>Bottom: {look.bottom.name}</span>
                     </div>
                   )}
                   {look.shoes && (
                     <div className="avatar-clothing-tag" style={{ bottom: "16%", left: "15%", pointerEvents: "auto" }}>
                       <span className="avatar-tag-dot" style={{ background: look.shoes.color }} />
-                      <span style={{ fontSize: 10, fontWeight: 700, color: "#fff" }}>👟 Shoes: {look.shoes.name}</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: "#fff" }}>Shoes: {look.shoes.name}</span>
                     </div>
                   )}
                   {look.outerwear && (
                     <div className="avatar-clothing-tag" style={{ top: "22%", right: "10%", pointerEvents: "auto" }}>
                       <span className="avatar-tag-dot" style={{ background: look.outerwear.color }} />
-                      <span style={{ fontSize: 10, fontWeight: 700, color: "#fff" }}>🧥 Outer: {look.outerwear.name}</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: "#fff" }}>Outer: {look.outerwear.name}</span>
                     </div>
                   )}
                 </div>
@@ -708,7 +708,8 @@ export default function StudioPage() {
         {/* Error message */}
         {genError && (
           <div style={{ padding:"10px 20px", background:"rgba(239,68,68,0.1)", borderTop:"1px solid rgba(239,68,68,0.2)", color:"var(--danger)", fontSize:12, display:"flex", gap:8, alignItems:"center", zIndex: 10 }}>
-            ⚠ {genError}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            {genError}
           </div>
         )}
 
@@ -770,7 +771,9 @@ export default function StudioPage() {
               <p style={{ fontSize:10, fontWeight:700, color:"var(--muted)", textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>Makeup</p>
               {look.lipstick && (
                 <div className="look-slot filled">
-                  <span className="look-slot-icon">💋</span>
+                  <span className="look-slot-icon" style={{ display: "flex", alignItems: "center" }}>
+                    <CategoryIcon id="makeup" />
+                  </span>
                   <span className="look-slot-label">Lipstick</span>
                   <div className="look-slot-thumb" style={{ background:look.lipstick, border:`2px solid ${look.lipstick}` }} />
                   <button type="button" className="look-slot-remove" onClick={() => setLook((p) => ({ ...p, lipstick:null }))}>×</button>
@@ -778,7 +781,9 @@ export default function StudioPage() {
               )}
               {look.eyeshadow && (
                 <div className="look-slot filled">
-                  <span className="look-slot-icon">👁️</span>
+                  <span className="look-slot-icon" style={{ display: "flex", alignItems: "center" }}>
+                    <CategoryIcon id="makeup" />
+                  </span>
                   <span className="look-slot-label">Eye Shadow</span>
                   <div className="look-slot-thumb" style={{ background:look.eyeshadow }} />
                   <button type="button" className="look-slot-remove" onClick={() => setLook((p) => ({ ...p, eyeshadow:null }))}>×</button>

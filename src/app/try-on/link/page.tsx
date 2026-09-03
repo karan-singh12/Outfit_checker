@@ -332,7 +332,7 @@ export default function TryOnLinkPage() {
                 {isGenerating && (
                   <span className="spinner spinner-sm" style={{ borderTopColor: "#fff", borderColor: "rgba(255,255,255,0.25)" }} />
                 )}
-                {isGenerating ? "Generating…" : "✨  Try On Now"}
+                {isGenerating ? "Generating…" : "Try On Now"}
               </span>
             </button>
 
@@ -432,15 +432,21 @@ export default function TryOnLinkPage() {
 
                   <div className="link-tips">
                     <div className="link-tip">
-                      <span className="link-tip-icon">💡</span>
+                      <span className="link-tip-icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                      </span>
                       <span>Works best with front-facing, full-body or waist-up photos</span>
                     </div>
                     <div className="link-tip">
-                      <span className="link-tip-icon">✅</span>
+                      <span className="link-tip-icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
+                      </span>
                       <span>Supports Myntra, Amazon, ASOS, Zara, Flipkart &amp; more</span>
                     </div>
                     <div className="link-tip">
-                      <span className="link-tip-icon">⏱️</span>
+                      <span className="link-tip-icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      </span>
                       <span>Generation takes 30–90 seconds (AI cold start)</span>
                     </div>
                   </div>

@@ -215,16 +215,19 @@ export default function SetupPage() {
               ))}
             </div>
 
-            <div style={{ marginTop: 24, padding: 16, background: "rgba(168,85,247,0.06)", border: "1px solid rgba(168,85,247,0.15)", borderRadius: "var(--r-md)" }}>
+            <div style={{ marginTop: 24, padding: 16, background: "rgba(168,85,247,0.06)", border: "1px solid rgba(168,85,247,0.15)", borderRadius: "var(--r-md)", display: "flex", gap: 10, alignItems: "flex-start" }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2, color: "var(--purple)" }}>
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
               <p style={{ fontSize: 12, color: "var(--text-soft)", lineHeight: 1.6 }}>
-                🔒 Your measurements stay on your device and are only used to generate realistic clothing fit on your avatar.
+                Your measurements stay on your device and are only used to generate realistic clothing fit on your avatar.
               </p>
             </div>
 
             <div style={{ marginTop: 28, display: "flex", gap: 12 }}>
-              <button type="button" className="btn btn-ghost" style={{ flex: 1 }} onClick={() => setStep(1)}>← Back</button>
+              <button type="button" className="btn btn-ghost" style={{ flex: 1 }} onClick={() => setStep(1)}>Back</button>
               <button type="button" className="btn btn-gradient" style={{ flex: 2 }} onClick={handleBuildTwin}>
-                Build My Twin ✨
+                Build My Twin
               </button>
             </div>
           </div>
@@ -240,7 +243,11 @@ export default function SetupPage() {
                 <div className="twin-avatar-center">
                   {selfiePreview
                     ? <img src={selfiePreview} alt="twin" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
-                    : "🧬"}
+                    : (
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--purple)" }}>
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                      </svg>
+                    )}
                 </div>
               </div>
               <h3 className="twin-building-title">Building Your Digital Twin</h3>

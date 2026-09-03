@@ -44,7 +44,7 @@ export interface TrendingOutfit {
 }
 
 const BRAND_STORIES = [
-  { id: "all", name: "All Brands", logo: "★", bg: "linear-gradient(135deg, #00c98d, #0ea5e9)", active: true },
+  { id: "all", name: "All Brands", logo: "ALL", bg: "linear-gradient(135deg, #00c98d, #0ea5e9)", active: true },
   { id: "zara", name: "Zara", handle: "@zara_official", logo: "ZR", bg: "linear-gradient(135deg, #18181b, #3f3f46)" },
   { id: "hm", name: "H&M Studio", handle: "@hm_edition", logo: "HM", bg: "linear-gradient(135deg, #e11d48, #f43f5e)" },
   { id: "mango", name: "Mango", handle: "@mangostudio", logo: "MG", bg: "linear-gradient(135deg, #d97706, #f59e0b)" },

@@ -430,7 +430,7 @@ export default function TryOnPage() {
           >
             <span className="generate-btn-inner">
               {isLoading && <span className="spinner spinner-sm" style={{ borderTopColor: "#fff", borderColor: "rgba(255,255,255,0.25)" }} />}
-              {isLoading ? "Generating Look…" : "✨  Generate Look"}
+              {isLoading ? "Generating Look…" : "Generate Look"}
             </span>
           </button>
         </aside>
@@ -493,10 +493,10 @@ export default function TryOnPage() {
           <div className="preview-action-bar">
             <div style={{ marginRight: "auto", fontSize: 13, color: "var(--muted)", fontWeight: 500 }}>
               {resultImage
-                ? "✨ Tap an action below"
+                ? "Tap an action below"
                 : mode === "link"
-                ? "🔗 Link mode — paste a product URL"
-                : "📁 Upload mode — add your files"}
+                ? "Link mode — paste a product URL"
+                : "Upload mode — add your files"}
             </div>
 
             <button type="button" className="action-btn" onClick={handleShare} disabled={!resultImage} title="Share result">
