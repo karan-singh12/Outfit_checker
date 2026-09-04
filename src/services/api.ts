@@ -207,3 +207,90 @@ export async function uploadAvatar(token: string, file: File): Promise<string> {
   return json.data.url; // e.g. /public/uploads/general/filename.png
 }
 
+// ─── Friend System APIs ──────────────────────────────────────────────────
+
+export interface FriendUser {
+  id: string;
+  username: string | null;
+  email: string;
+  avatar: string | null;
+  bio?: string | null;
+  isOnline?: boolean;
+  lastSeen?: string;
+  friendshipId?: string;
+  friendsSince?: string;
+}
+
+export interface FriendRequestItem {
+  id: string; // friendship id
+  senderId: string;
+  receiverId: string;
+  status: "PENDING" | "ACCEPTED" | "REJECTED";
+  createdAt: string;
+  sender?: FriendUser;
+  receiver?: FriendUser;
+}
+
+export async function fetchFriendsList(token: string): Promise<FriendUser[]> {
+  const res = await fetch(`${API_BASE}/users/friends/list`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Failed to fetch friends");
+  const json = await res.json();
+  return json.data || [];
+}
+
+export async function fetchFriendRequests(token: string, type: "received" | "sent" | "all" = "all"): Promise<FriendRequestItem[]> {
+  const res = await fetch(`${API_BASE}/users/friends/requests?type=${type}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Failed to fetch friend requests");
+  const json = await res.json();
+  return json.data || [];
+}
+
+export async function sendFriendRequest(token: string, identifier: string): Promise<{ friendship: any; friend: FriendUser; accepted: boolean }> {
+  const res = await fetch(`${API_BASE}/users/friends/request`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ identifier }),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Failed to send friend request");
+  return json.data;
+}
+
+export async function respondToFriendRequest(token: string, friendshipId: string, status: "ACCEPTED" | "REJECTED"): Promise<any> {
+  const res = await fetch(`${API_BASE}/users/friends/requests/${friendshipId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ status }),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Failed to respond to friend request");
+  return json.data;
+}
+
+export async function removeFriend(token: string, friendId: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/users/friends/${friendId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Failed to remove friend");
+}
+
+export async function fetchFriendSuggestions(token: string): Promise<FriendUser[]> {
+  const res = await fetch(`${API_BASE}/users/friends/suggestions`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return [];
+  const json = await res.json();
+  return json.data || [];
+}
+

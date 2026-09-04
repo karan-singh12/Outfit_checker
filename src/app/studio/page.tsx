@@ -2,7 +2,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { fetchGarmentFromUrl, saveLook } from "../../services/api";
 import type { AvatarBodyProfile, AvatarType } from "../../components/AvatarSelector";
-import { CategoryIcon, type Category } from "../wardrobe/page";
+import { CategoryIcon, type Category } from "../closet/page";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "next/navigation";
 

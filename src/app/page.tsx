@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import dynamic from "next/dynamic";
 
 const FlowWave = dynamic(
@@ -9,159 +8,25 @@ const FlowWave = dynamic(
   { ssr: false }
 );
 
-/* ── scrolling items ── */
-const MARQUEE = ["AI TRY-ON", "ANY STORE", "AI MODELS", "MAKEUP", "REAL-TIME", "SAVE LOOKS", "WARDROBE", "SELFIE-POWERED"];
-const STATUS  = ["MODEL GENERATED", "OUTFIT FITTED", "FABRIC RENDERED", "LOOK SAVED", "API ONLINE", "MIRROR ACTIVE"];
-
-/* ── Tab definitions ── */
-const TABS = [
-  {
-    id: "explore",
-    label: "Explore",
-    title: "Browse any store, try it instantly",
-    bullets: [
-      "Paste any Myntra, Zara or Amazon product link",
-      "Our scraper extracts the garment image automatically",
-      "Preview the item on your avatar in under 5 seconds",
-      "No account needed for supported partner stores",
-    ],
-    code: [
-      { t: "comment", v: "// fetch-garment.ts" },
-      { t: "key", v: "POST", p: " /api/fetch-garment" },
-      { t: "key", v: "url:", p: ' "https://myntra.com/..."' },
-      { t: "divider" },
-      { t: "ok", v: "og:image extracted" },
-      { t: "ok", v: "JSON-LD candidate found" },
-      { t: "ok", v: "garmentImageUrl → ready" },
-    ],
-  },
-  {
-    id: "tryon",
-    label: "Try On",
-    title: "AI try-on on your actual photo",
-    bullets: [
-      "Upload one selfie — it works for every outfit forever",
-      "IDM-VTON model preserves your face, pose & background",
-      "Ultra-realistic fabric draping and lighting simulation",
-      "Supports upper body, lower body, full dresses",
-    ],
-    code: [
-      { t: "comment", v: "// replicate-vton.log" },
-      { t: "key", v: "model:", p: " cuuupid/idm-vton" },
-      { t: "key", v: "category:", p: " upper_body" },
-      { t: "divider" },
-      { t: "ok", v: "status: starting" },
-      { t: "muted", v: "status: processing · 42s" },
-      { t: "ok", v: "succeeded · image ready" },
-    ],
-  },
-  {
-    id: "studio",
-    label: "AI Studio",
-    title: "AI model dressing room",
-    bullets: [
-      "Generate custom base models of any gender, age & ethnicity with AI",
-      "Upload your own selfie for a fully personalized try-on base",
-      "Interactive layering visual tags show your selected wardrobe combinations",
-      "Save looks & apply cosmetics instantly with real-time preview",
-    ],
-    code: [
-      { t: "comment", v: "// generate-user.ts" },
-      { t: "key", v: "model:", p: " flux-schnell" },
-      { t: "key", v: "aspect_ratio:", p: " 3:4" },
-      { t: "divider" },
-      { t: "ok", v: "Base model generated" },
-      { t: "ok", v: "Interactive wardrobe tags active" },
-      { t: "ok", v: "Try-on pipeline ready" },
-    ],
-  },
-  {
-    id: "looks",
-    label: "Save Looks",
-    title: "Save & share your best outfits",
-    bullets: [
-      "Build a complete outfit across all 9 categories",
-      "Save any combination as a named Look instantly",
-      "Download the AI-generated try-on result photo",
-      "Share your looks with friends or on social media",
-    ],
-    code: [
-      { t: "comment", v: "// looks-timeline" },
-      { t: "divider" },
-      { t: "look", v: "Summer Casual", d: "1d ago" },
-      { t: "look", v: "Office Chic",   d: "2d ago" },
-      { t: "look", v: "Night Out",     d: "5d ago" },
-    ],
-  },
-  {
-    id: "makeup",
-    label: "Makeup",
-    title: "Makeup & accessories in one canvas",
-    bullets: [
-      "15 lipstick shades from nudes to deep reds",
-      "15 eyeshadow tones from smoky to colorful",
-      "Blush intensity slider from 0 to full coverage",
-      "Add eyewear, jewellery and bags to complete the look",
-    ],
-    code: [
-      { t: "comment", v: "// makeup-palette" },
-      { t: "divider" },
-      { t: "key", v: "lipstick:", p: " Ruby Red" },
-      { t: "key", v: "eyeshadow:", p: " Smoky Charcoal" },
-      { t: "key", v: "blush:", p: " Peach (45%)" },
-      { t: "divider" },
-      { t: "ok", v: "applied successfully" },
-    ],
-  },
-];
-
-/* ── Code preview component ── */
-function CodePreview({ lines }: { lines: any[] }) {
-  return (
-    <div className="code-preview">
-      <div className="code-preview-dots">
-        <span className="cp-dot red"/>
-        <span className="cp-dot yellow"/>
-        <span className="cp-dot green"/>
-      </div>
-      <div className="code-preview-body font-mono">
-        {lines.map((l: any, i: number) => {
-          if (l.t === "comment")  return <div key={i} className="cp-comment">{l.v}</div>;
-          if (l.t === "divider")  return <div key={i} className="cp-divider"/>;
-          if (l.t === "ok")       return <div key={i} className="cp-ok"><span className="cp-check">✓</span>{l.v}</div>;
-          if (l.t === "muted")    return <div key={i} className="cp-muted">{l.v}</div>;
-          if (l.t === "key")      return <div key={i} className="cp-key"><span>{l.v}</span><span className="cp-val">{l.p}</span></div>;
-          if (l.t === "look")     return <div key={i} className="cp-look"><span className="cp-look-dot"/><span>{l.v}</span><span className="cp-look-date">{l.d}</span></div>;
-          if (l.t === "swatches") return <div key={i} className="cp-swatches">{(l.colors||[]).map((c: string, j: number)=><span key={j} style={{background:c}} className="cp-swatch"/>)}</div>;
-          return null;
-        })}
-      </div>
-    </div>
-  );
-}
-
 export default function LandingPage() {
-  const [tab, setTab] = useState("explore");
-  const active = TABS.find(t => t.id === tab)!;
-
   return (
     <div className="nf-page">
       <FlowWave />
 
-      {/* ─── Hero Section ─────────────────────────────────────────── */}
+      {/* ─── Hero Section (Waves visible in background) ───────────── */}
       <section className="nf-hero">
-        <div className="nf-hero-glow nf-hero-glow-1"/>
-        <div className="nf-hero-glow nf-hero-glow-2"/>
+        <div className="nf-hero-glow nf-hero-glow-1" />
+        <div className="nf-hero-glow nf-hero-glow-2" />
 
         {/* Eyebrow Pill */}
         <div className="nf-eyebrow">
-          <span className="nf-eyebrow-dot"/>
+          <span className="nf-eyebrow-dot" />
           Try on outfits, shoes, accessories &amp; makeup — from any store
         </div>
 
         {/* Headline */}
         <h1 className="nf-headline">
-          Your virtual dressing room,<br/>
+          Your virtual dressing room,<br />
           <span className="nf-headline-accent">powered by AI.</span>
         </h1>
 
@@ -186,23 +51,23 @@ export default function LandingPage() {
         <div className="nf-hero-visual">
           <div className="nf-hero-tryon-mockup">
             <div className="mockup-header">
-              <span className="cp-dot red"/><span className="cp-dot yellow"/><span className="cp-dot green"/>
+              <span className="cp-dot red" /><span className="cp-dot yellow" /><span className="cp-dot green" />
               <span className="font-mono" style={{ fontSize: 11, color: "var(--muted)" }}>try-on-pipeline · active</span>
             </div>
             <div className="mockup-body">
               <div className="mockup-before">
                 <span className="mockup-tag">Selfie</span>
                 <div className="mockup-img-placeholder before-img">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
                 </div>
               </div>
               <div className="mockup-arrow">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
               </div>
               <div className="mockup-after">
                 <span className="mockup-tag success">AI Try-on</span>
                 <div className="mockup-img-placeholder after-img">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.38 3.46L16 2a4 4 0 0 0-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.84H5v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V10h1.15a1 1 0 0 0 .99-.84l.58-3.57a2 2 0 0 0-1.34-2.23z"/></svg>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.38 3.46L16 2a4 4 0 0 0-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.84H5v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V10h1.15a1 1 0 0 0 .99-.84l.58-3.57a2 2 0 0 0-1.34-2.23z" /></svg>
                 </div>
               </div>
             </div>
@@ -217,241 +82,494 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── Platform Strip ───────────────────────────────────────── */}
-      <div className="nf-platform-strip">
-        <span className="nf-platform-label">Threadflank</span>
-        <span className="nf-platform-sep">WORKS WITH</span>
-        {["Myntra","Amazon","Zara","ASOS","Flipkart","H&M","Nykaa"].map(s=>(
-          <span key={s} className="nf-platform-chip">{s}</span>
-        ))}
-        <span className="nf-platform-chip nf-platform-chip-any">Any store →</span>
-      </div>
-
-      {/* ─── Four Alternating Feature Sections ─────────────────────── */}
-      <section className="nf-features-alternating">
-        
-        {/* Section A — AI Try-On (flagship feature) */}
-        <div className="alt-feature-row">
-          <div className="alt-feature-visual">
-            <div className="alt-feature-card">
-              <div className="card-bar">
-                <span className="cp-dot red"/><span className="cp-dot yellow"/><span className="cp-dot green"/>
-                <span className="font-mono" style={{ fontSize: 11, color: "var(--muted)" }}>tryon-pipeline.sh</span>
-              </div>
-              <div className="card-image-content">
-                <img src="/images/feature-tryon.jpg" alt="AI Try-On Demo" className="feature-demo-img" />
-              </div>
-            </div>
-          </div>
-          <div className="alt-feature-text">
-            <span className="alt-feature-eyebrow">AI Try-on</span>
-            <h2 className="alt-feature-headline">See it on you before you buy it</h2>
-            <p className="alt-feature-body">
-              Upload a selfie and basic measurements, paste any product link or image, and Threadflank generates a realistic render of you wearing it. Your face and body remain untouched—only the outfit changes.
-            </p>
-            <Link href="/setup" className="alt-feature-btn">
-              Try it now
-            </Link>
-          </div>
-        </div>
-
-        {/* Section B — Wardrobe & Event Planning */}
-        <div className="alt-feature-row alt-reverse">
-          <div className="alt-feature-text">
-            <span className="alt-feature-eyebrow">Wardrobe</span>
-            <h2 className="alt-feature-headline">Never wonder what to wear again</h2>
-            <p className="alt-feature-body">
-              Save outfit combinations to a personal wardrobe board before buying. Mix and match for an upcoming event, compare options side by side, and decide without trying on 10 physical outfits.
-            </p>
-            <Link href="/wardrobe" className="alt-feature-btn">
-              Build your wardrobe
-            </Link>
-          </div>
-          <div className="alt-feature-visual">
-            <div className="alt-feature-card">
-              <div className="card-bar">
-                <span className="font-mono" style={{ fontSize: 11, color: "var(--muted)" }}>wardrobe-board // event-planning</span>
-              </div>
-              <div className="card-image-content">
-                <img src="/images/feature-wardrobe.jpg" alt="Wardrobe planning" className="feature-demo-img" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Section C — Share & Get Opinions */}
-        <div className="alt-feature-row">
-          <div className="alt-feature-visual">
-            <div className="alt-feature-card">
-              <div className="card-bar">
-                <span className="font-mono" style={{ fontSize: 11, color: "var(--muted)" }}>live-share-session</span>
-              </div>
-              <div className="card-image-content">
-                <img src="/images/feature-social.jpg" alt="Social share session" className="feature-demo-img" />
-              </div>
-            </div>
-          </div>
-          <div className="alt-feature-text">
-            <span className="alt-feature-eyebrow">Social</span>
-            <h2 className="alt-feature-headline">Get a second opinion, instantly</h2>
-            <p className="alt-feature-body">
-              Share a look with friends via chat or video call inside the app and get real-time feedback before deciding. No more group-chat screenshots.
-            </p>
-            <Link href="/messages" className="alt-feature-btn">
-              See how it works
-            </Link>
-          </div>
-        </div>
-
-        {/* Section D — Trending Feed */}
-        <div className="alt-feature-row alt-reverse">
-          <div className="alt-feature-text">
-            <span className="alt-feature-eyebrow">Discover</span>
-            <h2 className="alt-feature-headline">Fresh drops, styled for you</h2>
-            <p className="alt-feature-body">
-              Browse trending and new arrivals from partner brands, curated into a feed. Try any of it on your avatar with just one tap.
-            </p>
-            <Link href="/trending" className="alt-feature-btn">
-              Explore trending
-            </Link>
-          </div>
-          <div className="alt-feature-visual">
-            <div className="alt-feature-card">
-              <div className="card-bar">
-                <span className="font-mono" style={{ fontSize: 11, color: "var(--muted)" }}>trending-feed-curated</span>
-              </div>
-              <div className="card-image-content">
-                <img src="/images/feature-discover.jpg" alt="Discover trending outfits" className="feature-demo-img" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Status Ticker ────────────────────────────────────────── */}
-      <div className="nf-status-bar">
-        <div className="nf-status-track">
-          {[...STATUS,...STATUS].map((item,i)=>(
-            <span key={i} className="nf-status-item font-mono">
-              <span className="nf-status-dot"/>{item}<span className="nf-marquee-sep">|</span>
-            </span>
+      {/* ─── Frosted Blur Layer (Starts below Hero, covers till footer) ─── */}
+      <div
+        className="nf-frosted-container"
+        style={{
+          position: "relative",
+          zIndex: 2,
+          backdropFilter: "blur(28px) saturate(180%)",
+          WebkitBackdropFilter: "blur(28px) saturate(180%)",
+          background: "linear-gradient(180deg, color-mix(in srgb, var(--bg) 60%, transparent) 0%, color-mix(in srgb, var(--bg) 92%, transparent) 14%, var(--bg) 100%)",
+          borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+        }}
+      >
+        {/* ─── Platform Strip ──────────────────────────────────────── */}
+        <div className="nf-platform-strip">
+          <span className="nf-platform-sep">WORKS WITH</span>
+          {["Myntra", "Amazon", "Zara", "ASOS", "Flipkart", "H&M", "Nykaa"].map((s) => (
+            <span key={s} className="nf-platform-chip">{s}</span>
           ))}
+          <span className="nf-platform-chip nf-platform-chip-any">Any store link →</span>
         </div>
-      </div>
 
-      {/* ─── Tabbed Feature Section ───────────────────────────────── */}
-      <section className="nf-tabs-section">
-        <h2 className="nf-tabs-headline">
-          The operating system<br/>for your personal wardrobe.
-        </h2>
-        <div className="nf-tabs-layout">
-          {/* sidebar */}
-          <div className="nf-tabs-sidebar">
-            {TABS.map(t=>(
-              <button
-                key={t.id}
-                className={`nf-tab-btn${tab===t.id?" nf-tab-btn-active":""}`}
-                onClick={()=>setTab(t.id)}
-              >
-                {t.label}
-              </button>
-            ))}
+        {/* ─── Features Grid Section ───────────────────────────────── */}
+        <section style={{ maxWidth: 1160, margin: "0 auto", padding: "80px 24px 60px" }}>
+          <div style={{ textAlign: "center", marginBottom: 56 }}>
+            <span style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "5px 14px",
+              borderRadius: 99,
+              border: "1px solid var(--border)",
+              background: "var(--surface)",
+              fontSize: 12,
+              fontWeight: 600,
+              color: "var(--text-soft)",
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              marginBottom: 16
+            }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent)" }} />
+              Platform Features
+            </span>
+            <h2 style={{ fontSize: "clamp(28px, 4.5vw, 42px)", fontWeight: 700, color: "var(--text)", lineHeight: 1.2, marginBottom: 14 }}>
+              Everything you need to dress <span style={{ background: "linear-gradient(135deg, #00c98d, #0ea5e9, #8b5cf6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>with absolute confidence</span>
+            </h2>
+            <p style={{ color: "var(--text-soft)", fontSize: 16, maxWidth: 540, margin: "0 auto", lineHeight: 1.65 }}>
+              From high-fidelity virtual draping to contextual AI occasion planners — all in one unified wardrobe studio.
+            </p>
           </div>
-          {/* content */}
-          <div className="nf-tabs-content">
-            <h3 className="nf-tabs-content-title">{active.title}</h3>
-            <ul className="nf-tabs-bullets">
-              {active.bullets.map((b,i)=>(
-                <li key={i} className="nf-bullet">
-                  <span className="nf-bullet-icon">›</span>{b}
-                </li>
-              ))}
-            </ul>
-          </div>
-          {/* code preview */}
-          <div className="nf-tabs-preview">
-            <CodePreview lines={active.code}/>
-          </div>
-        </div>
-      </section>
 
-      {/* ─── Stats Bar ────────────────────────────────────────────── */}
-      <section className="nf-stats-bar">
-        {[
-          { val:"15+",   label:"Lipstick shades" },
-          { val:"Flux",  label:"AI model gen" },
-          { val:"9",     label:"Category types" },
-          { val:"< 90s", label:"AI try-on time" },
-        ].map(s=>(
-          <div key={s.label} className="nf-stat-item">
-            <div className="nf-stat-val">{s.val}</div>
-            <div className="nf-stat-label">{s.label}</div>
-          </div>
-        ))}
-      </section>
+          {/* 6 Grid Cards */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(330px, 1fr))", gap: 22 }}>
 
-      {/* ─── Footer ───────────────────────────────────────────────── */}
-      <footer className="nf-footer">
-        <div className="nf-footer-inner">
-          <div className="nf-footer-top">
-            <div className="nf-footer-brand">
-              <div className="nf-footer-logo">
-                <svg width="26" height="26" viewBox="0 0 32 32" fill="none">
-                  <defs>
-                    <linearGradient id="tf-footer-grad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-                      <stop stopColor="#00c98d"/><stop offset="1" stopColor="#0ea5e9"/>
-                    </linearGradient>
-                  </defs>
-                  <rect width="32" height="32" rx="8" fill="url(#tf-footer-grad)"/>
-                  <path d="M16 8a3 3 0 013 3h-2a1 1 0 00-2 0 1 1 0 01-1-1 3 3 0 012-2z" fill="white"/>
-                  <path d="M7 15l9-4 9 4v2.5l-9-4-9 4V15z" fill="white" fillOpacity="0.95"/>
-                  <rect x="7" y="19" width="18" height="2.5" rx="1.25" fill="white" fillOpacity="0.7"/>
-                  <rect x="7" y="23" width="13" height="2.5" rx="1.25" fill="white" fillOpacity="0.45"/>
+            {/* Card 1: AI Try-On (Drape) */}
+            <div
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                borderRadius: 20,
+                padding: "30px 26px 24px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 16,
+                position: "relative",
+                overflow: "hidden",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
+                transition: "all 0.25s ease"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "rgba(0,201,141,0.45)";
+                e.currentTarget.style.transform = "translateY(-3px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--border)";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+            >
+              <div style={{ position: "absolute", top: 0, right: 0, width: 180, height: 180, background: "radial-gradient(circle, rgba(0,201,141,0.09) 0%, transparent 70%)", pointerEvents: "none" }} />
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg, rgba(0,201,141,0.18), rgba(0,201,141,0.05))", border: "1px solid rgba(0,201,141,0.28)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00c98d" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" />
                 </svg>
-                <span className="nf-footer-brand-name">Threadflank<span style={{color:"var(--purple)"}}>.</span></span>
               </div>
-              <p className="nf-footer-tagline">Try anything. Wear everything.</p>
-            </div>
-            <div className="nf-footer-cols">
-              <div className="nf-footer-col">
-                <div className="nf-footer-col-title">Product</div>
-                <Link href="/studio"   className="nf-footer-link">Studio</Link>
-                <Link href="/wardrobe" className="nf-footer-link">Wardrobe</Link>
-                <Link href="/looks"    className="nf-footer-link">Saved looks</Link>
-                <Link href="/trending" className="nf-footer-link">Trending</Link>
+              <div>
+                <p style={{ fontSize: 18, fontWeight: 700, color: "var(--text)", marginBottom: 8 }}>AI Try-On &amp; Drape</p>
+                <p style={{ fontSize: 14, color: "var(--text-soft)", lineHeight: 1.65 }}>
+                  Upload one selfie. See yourself wearing garments from any store link or image with photorealistic fabric physics, exact body preservation, and natural lighting.
+                </p>
               </div>
-              <div className="nf-footer-col">
-                <div className="nf-footer-col-title">Features</div>
-                <span className="nf-footer-link">AI Try-on</span>
-                <Link href="/setup" className="nf-footer-link">Digital twin</Link>
-                <span className="nf-footer-link">Makeup studio</span>
-                <span className="nf-footer-link">Link scraper</span>
-              </div>
-              <div className="nf-footer-col">
-                <div className="nf-footer-col-title">Stores</div>
-                {["Myntra","Amazon","ASOS","Zara","H&M","Nykaa"].map(s=>(
-                  <span key={s} className="nf-footer-link">{s}</span>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: "auto" }}>
+                {["IDM-VTON Engine", "Any Store Link", "Exact Face & Body"].map((t) => (
+                  <span key={t} style={{ padding: "3px 10px", borderRadius: 99, background: "rgba(0,201,141,0.08)", border: "1px solid rgba(0,201,141,0.2)", fontSize: 11, color: "#00c98d", fontWeight: 500 }}>{t}</span>
                 ))}
               </div>
-              <div className="nf-footer-col">
-                <div className="nf-footer-col-title">Company</div>
-                <span className="nf-footer-link">About</span>
-                <span className="nf-footer-link">Privacy</span>
-                <span className="nf-footer-link">Terms</span>
-                <span className="nf-footer-link">Contact</span>
+              <Link href="/studio" style={{ fontSize: 13, fontWeight: 600, color: "#00c98d", display: "inline-flex", alignItems: "center", gap: 5, textDecoration: "none", marginTop: 4 }}>
+                Open Drape Studio
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+              </Link>
+            </div>
+
+            {/* Card 2: Occasion Planner */}
+            <div
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                borderRadius: 20,
+                padding: "30px 26px 24px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 16,
+                position: "relative",
+                overflow: "hidden",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
+                transition: "all 0.25s ease"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "rgba(139,92,246,0.45)";
+                e.currentTarget.style.transform = "translateY(-3px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--border)";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+            >
+              <div style={{ position: "absolute", top: 0, right: 0, width: 180, height: 180, background: "radial-gradient(circle, rgba(139,92,246,0.09) 0%, transparent 70%)", pointerEvents: "none" }} />
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg, rgba(139,92,246,0.18), rgba(139,92,246,0.05))", border: "1px solid rgba(139,92,246,0.28)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+                  <path d="M9 16l2 2 4-4" />
+                </svg>
               </div>
+              <div>
+                <p style={{ fontSize: 18, fontWeight: 700, color: "var(--text)", marginBottom: 8 }}>AI Occasion Planner</p>
+                <p style={{ fontSize: 14, color: "var(--text-soft)", lineHeight: 1.65 }}>
+                  Tell AI about your destination, weather, and dress code. It automatically generates complete outfits from what you already own, highlighting missing gap items with shoppable links.
+                </p>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: "auto" }}>
+                {["Event Context", "Gap Detection", "Wardrobe Match"].map((t) => (
+                  <span key={t} style={{ padding: "3px 10px", borderRadius: 99, background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.2)", fontSize: 11, color: "#8b5cf6", fontWeight: 500 }}>{t}</span>
+                ))}
+              </div>
+              <Link href="/outfits" style={{ fontSize: 13, fontWeight: 600, color: "#8b5cf6", display: "inline-flex", alignItems: "center", gap: 5, textDecoration: "none", marginTop: 4 }}>
+                Plan an Occasion
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+              </Link>
+            </div>
+
+            {/* Card 3: Digital Closet */}
+            <div
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                borderRadius: 20,
+                padding: "30px 26px 24px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 16,
+                position: "relative",
+                overflow: "hidden",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
+                transition: "all 0.25s ease"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "rgba(14,165,233,0.45)";
+                e.currentTarget.style.transform = "translateY(-3px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--border)";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+            >
+              <div style={{ position: "absolute", top: 0, right: 0, width: 180, height: 180, background: "radial-gradient(circle, rgba(14,165,233,0.09) 0%, transparent 70%)", pointerEvents: "none" }} />
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg, rgba(14,165,233,0.18), rgba(14,165,233,0.05))", border: "1px solid rgba(14,165,233,0.28)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.84H5v10a2 2 0 002 2h10a2 2 0 002-2V10h1.15a1 1 0 00.99-.84l.58-3.57a2 2 0 00-1.34-2.23z" />
+                </svg>
+              </div>
+              <div>
+                <p style={{ fontSize: 18, fontWeight: 700, color: "var(--text)", marginBottom: 8 }}>Digital Closet &amp; Looks</p>
+                <p style={{ fontSize: 14, color: "var(--text-soft)", lineHeight: 1.65 }}>
+                  Catalogue owned garments across 9 categories. Save full outfits as curated Looks, track wear frequency, and mix &amp; match pieces without physical clutter.
+                </p>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: "auto" }}>
+                {["9 Categories", "Saved Outfits", "Cost-Per-Wear"].map((t) => (
+                  <span key={t} style={{ padding: "3px 10px", borderRadius: 99, background: "rgba(14,165,233,0.08)", border: "1px solid rgba(14,165,233,0.2)", fontSize: 11, color: "#0ea5e9", fontWeight: 500 }}>{t}</span>
+                ))}
+              </div>
+              <Link href="/closet" style={{ fontSize: 13, fontWeight: 600, color: "#0ea5e9", display: "inline-flex", alignItems: "center", gap: 5, textDecoration: "none", marginTop: 4 }}>
+                Explore My Closet
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+              </Link>
+            </div>
+
+            {/* Card 4: Discover Feed */}
+            <div
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                borderRadius: 20,
+                padding: "30px 26px 24px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 16,
+                position: "relative",
+                overflow: "hidden",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
+                transition: "all 0.25s ease"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "rgba(245,158,11,0.45)";
+                e.currentTarget.style.transform = "translateY(-3px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--border)";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+            >
+              <div style={{ position: "absolute", top: 0, right: 0, width: 180, height: 180, background: "radial-gradient(circle, rgba(245,158,11,0.09) 0%, transparent 70%)", pointerEvents: "none" }} />
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg, rgba(245,158,11,0.18), rgba(245,158,11,0.05))", border: "1px solid rgba(245,158,11,0.28)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+              </div>
+              <div>
+                <p style={{ fontSize: 18, fontWeight: 700, color: "var(--text)", marginBottom: 8 }}>Editorial Discover Feed</p>
+                <p style={{ fontSize: 14, color: "var(--text-soft)", lineHeight: 1.65 }}>
+                  Discover new drops and trending pieces from top partner fashion brands. Tap any story or item to instantly render it on your avatar in real time.
+                </p>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: "auto" }}>
+                {["Brand Stories", "1-Tap Try-On", "Curated Drops"].map((t) => (
+                  <span key={t} style={{ padding: "3px 10px", borderRadius: 99, background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)", fontSize: 11, color: "#f59e0b", fontWeight: 500 }}>{t}</span>
+                ))}
+              </div>
+              <Link href="/discover" style={{ fontSize: 13, fontWeight: 600, color: "#f59e0b", display: "inline-flex", alignItems: "center", gap: 5, textDecoration: "none", marginTop: 4 }}>
+                Browse Discover
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+              </Link>
+            </div>
+
+            {/* Card 5: Makeup & Cosmetics */}
+            <div
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                borderRadius: 20,
+                padding: "30px 26px 24px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 16,
+                position: "relative",
+                overflow: "hidden",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
+                transition: "all 0.25s ease"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "rgba(236,72,153,0.45)";
+                e.currentTarget.style.transform = "translateY(-3px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--border)";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+            >
+              <div style={{ position: "absolute", top: 0, right: 0, width: 180, height: 180, background: "radial-gradient(circle, rgba(236,72,153,0.09) 0%, transparent 70%)", pointerEvents: "none" }} />
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg, rgba(236,72,153,0.18), rgba(236,72,153,0.05))", border: "1px solid rgba(236,72,153,0.28)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ec4899" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="3" /><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" />
+                </svg>
+              </div>
+              <div>
+                <p style={{ fontSize: 18, fontWeight: 700, color: "var(--text)", marginBottom: 8 }}>Makeup &amp; Accessory Studio</p>
+                <p style={{ fontSize: 14, color: "var(--text-soft)", lineHeight: 1.65 }}>
+                  Experiment with 15+ lipstick shades, eyeshadow palettes, and blush intensities alongside sunglasses and jewellery to see your head-to-toe look.
+                </p>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: "auto" }}>
+                {["15+ Lip Shades", "Eyeshadow", "Jewellery & Eyewear"].map((t) => (
+                  <span key={t} style={{ padding: "3px 10px", borderRadius: 99, background: "rgba(236,72,153,0.08)", border: "1px solid rgba(236,72,153,0.2)", fontSize: 11, color: "#ec4899", fontWeight: 500 }}>{t}</span>
+                ))}
+              </div>
+              <Link href="/studio" style={{ fontSize: 13, fontWeight: 600, color: "#ec4899", display: "inline-flex", alignItems: "center", gap: 5, textDecoration: "none", marginTop: 4 }}>
+                Try Makeup in Studio
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+              </Link>
+            </div>
+
+            {/* Card 6: Second Opinion & Social */}
+            <div
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                borderRadius: 20,
+                padding: "30px 26px 24px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 16,
+                position: "relative",
+                overflow: "hidden",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
+                transition: "all 0.25s ease"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "rgba(16,185,129,0.45)";
+                e.currentTarget.style.transform = "translateY(-3px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--border)";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+            >
+              <div style={{ position: "absolute", top: 0, right: 0, width: 180, height: 180, background: "radial-gradient(circle, rgba(16,185,129,0.09) 0%, transparent 70%)", pointerEvents: "none" }} />
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg, rgba(16,185,129,0.18), rgba(16,185,129,0.05))", border: "1px solid rgba(16,185,129,0.28)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                </svg>
+              </div>
+              <div>
+                <p style={{ fontSize: 18, fontWeight: 700, color: "var(--text)", marginBottom: 8 }}>Instant Second Opinion</p>
+                <p style={{ fontSize: 14, color: "var(--text-soft)", lineHeight: 1.65 }}>
+                  Share outfit drafts directly with friends or stylists in-app via messages. Get live feedback, votes, and suggestions before completing a purchase.
+                </p>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: "auto" }}>
+                {["In-App Chat", "Share Look Cards", "Friend Feedback"].map((t) => (
+                  <span key={t} style={{ padding: "3px 10px", borderRadius: 99, background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)", fontSize: 11, color: "#10b981", fontWeight: 500 }}>{t}</span>
+                ))}
+              </div>
+              <Link href="/messages" style={{ fontSize: 13, fontWeight: 600, color: "#10b981", display: "inline-flex", alignItems: "center", gap: 5, textDecoration: "none", marginTop: 4 }}>
+                Open Messages
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+              </Link>
+            </div>
+
+          </div>
+        </section>
+
+        {/* ─── 3-Step Simple Flow Section ───────────────────────────── */}
+        <section style={{ maxWidth: 1040, margin: "0 auto", padding: "40px 24px 70px" }}>
+          <div style={{
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            borderRadius: 24,
+            padding: "44px 36px",
+            position: "relative",
+            overflow: "hidden"
+          }}>
+            <div style={{ textAlign: "center", marginBottom: 36 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Simple Workflow</span>
+              <h3 style={{ fontSize: 26, fontWeight: 700, color: "var(--text)", marginTop: 6 }}>How Threadflank Works in 3 Steps</h3>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 24 }}>
+              {[
+                { step: "01", title: "Add Your Avatar", desc: "Upload one clear photo or configure an AI mannequin with your exact height and proportions." },
+                { step: "02", title: "Select or Paste Garment", desc: "Paste any store link from Myntra, Zara, Amazon or upload photo directly from your closet." },
+                { step: "03", title: "Fit, Style & Plan", desc: "View the realistic drape render, pair with accessories, and save to your upcoming occasion schedule." }
+              ].map((item, idx) => (
+                <div key={idx} style={{ padding: "20px 22px", borderRadius: 16, background: "var(--bg)", border: "1px solid var(--border)" }}>
+                  <div style={{ fontSize: 28, fontWeight: 800, color: "var(--accent)", opacity: 0.85, marginBottom: 8, fontFamily: "monospace" }}>{item.step}</div>
+                  <h4 style={{ fontSize: 16, fontWeight: 600, color: "var(--text)", marginBottom: 6 }}>{item.title}</h4>
+                  <p style={{ fontSize: 13, color: "var(--text-soft)", lineHeight: 1.6 }}>{item.desc}</p>
+                </div>
+              ))}
             </div>
           </div>
-          <div className="nf-footer-bottom">
-            <div className="nf-footer-status">
-              <span className="status-dot status-dot-green"/>
-              All systems operational
+        </section>
+
+        {/* ─── CTA Strip ─────────────────────────────────────────────── */}
+        <div style={{ maxWidth: 760, margin: "0 auto 80px", padding: "0 24px", textAlign: "center" }}>
+          <div style={{
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            borderRadius: 28,
+            padding: "52px 40px",
+            position: "relative",
+            overflow: "hidden",
+            boxShadow: "0 20px 50px rgba(0,0,0,0.12)"
+          }}>
+            <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--accent) 14%, transparent) 0%, transparent 70%)", pointerEvents: "none" }} />
+            <p style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-soft)", marginBottom: 16 }}>Start today — it's free</p>
+            <h2 style={{ fontSize: "clamp(26px, 4vw, 38px)", fontWeight: 700, color: "var(--text)", lineHeight: 1.25, marginBottom: 14 }}>
+              Your perfect outfit is already in your closet.
+            </h2>
+            <p style={{ fontSize: 15, color: "var(--text-soft)", lineHeight: 1.65, marginBottom: 32, maxWidth: 480, margin: "0 auto 32px" }}>
+              Threadflank helps you find it, drape it on your real body, and try everything else before spending a rupee.
+            </p>
+            <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+              <Link href="/setup" className="nf-btn-primary" style={{ minWidth: 160, justifyContent: "center" }}>
+                Get started free
+              </Link>
+              <Link href="/studio" className="nf-btn-ghost" style={{ minWidth: 140, justifyContent: "center" }}>
+                Try demo studio
+              </Link>
             </div>
-            <div className="nf-footer-copy">© 2026 Threadflank. All rights reserved.</div>
           </div>
         </div>
-        <div className="nf-footer-watermark">THREADFLANK</div>
-      </footer>
+
+        {/* ─── Stats Metrics Bar ─────────────────────────────────────── */}
+        <section className="nf-stats-bar" style={{ borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)", backdropFilter: "blur(12px)" }}>
+          {[
+            { val: "< 90s", label: "AI try-on render speed" },
+            { val: "9", label: "Wardrobe categories" },
+            { val: "15+", label: "Cosmetic & makeup shades" },
+            { val: "Any", label: "Store links supported" },
+          ].map((s) => (
+            <div key={s.label} className="nf-stat-item">
+              <div className="nf-stat-val">{s.val}</div>
+              <div className="nf-stat-label">{s.label}</div>
+            </div>
+          ))}
+        </section>
+
+        {/* ─── Footer ───────────────────────────────────────────────── */}
+        <footer className="nf-footer" style={{ borderTop: "none" }}>
+          <div className="nf-footer-inner">
+            <div className="nf-footer-top">
+              <div className="nf-footer-brand">
+                <div className="nf-footer-logo">
+                  <div style={{ width: 32, height: 32, borderRadius: 8, overflow: "hidden", background: "#0c111d", border: "1px solid rgba(255,255,255,0.1)", flexShrink: 0 }}>
+                    <img src="/images/logo.png" alt="Threadflank Logo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  </div>
+                  <span className="nf-footer-brand-name" style={{ background: "linear-gradient(135deg, #00c98d 0%, #0ea5e9 50%, #8b5cf6 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                    Threadflank<span style={{ WebkitTextFillColor: "transparent" }}>.</span>
+                  </span>
+                </div>
+                <p className="nf-footer-tagline">Try anything. Wear everything.</p>
+              </div>
+
+              <div className="nf-footer-cols">
+                <div className="nf-footer-col">
+                  <div className="nf-footer-col-title">Product</div>
+                  <Link href="/studio" className="nf-footer-link">Drape</Link>
+                  <Link href="/discover" className="nf-footer-link">Discover</Link>
+                  <Link href="/outfits" className="nf-footer-link">Outfits</Link>
+                  <Link href="/closet" className="nf-footer-link">Closet</Link>
+                  <Link href="/pricing" className="nf-footer-link">Pricing</Link>
+                  <Link href="/messages" className="nf-footer-link">Messages</Link>
+                </div>
+                <div className="nf-footer-col">
+                  <div className="nf-footer-col-title">Features</div>
+                  <Link href="/studio" className="nf-footer-link">AI Try-on</Link>
+                  <Link href="/setup" className="nf-footer-link">Digital twin</Link>
+                  <Link href="/outfits" className="nf-footer-link">Occasion Planner</Link>
+                  <Link href="/studio" className="nf-footer-link">Makeup studio</Link>
+                </div>
+                <div className="nf-footer-col">
+                  <div className="nf-footer-col-title">Stores</div>
+                  {["Myntra", "Amazon", "ASOS", "Zara", "H&M", "Nykaa"].map((s) => (
+                    <span key={s} className="nf-footer-link">{s}</span>
+                  ))}
+                </div>
+                <div className="nf-footer-col">
+                  <div className="nf-footer-col-title">Company</div>
+                  <Link href="/pricing" className="nf-footer-link">Plans &amp; Pricing</Link>
+                  <span className="nf-footer-link">About</span>
+                  <span className="nf-footer-link">Privacy</span>
+                  <span className="nf-footer-link">Terms</span>
+                  <span className="nf-footer-link">Contact</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="nf-footer-bottom">
+              <div className="nf-footer-status">
+                <span className="status-dot status-dot-green" />
+                All systems operational
+              </div>
+              <div className="nf-footer-copy">© 2026 Threadflank. All rights reserved.</div>
+            </div>
+          </div>
+
+          <div
+            className="nf-footer-watermark"
+            style={{
+              background: "linear-gradient(135deg, #00c98d 0%, #0ea5e9 50%, #8b5cf6 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              opacity: 1
+            }}
+          >
+            THREADFLANK
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }

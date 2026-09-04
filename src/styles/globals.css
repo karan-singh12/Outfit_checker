@@ -3358,9 +3358,54 @@ img { max-width: 100%; display: block; }
   .studio-avatar-stage { min-height: 400px; }
   .studio-right { height: auto; border-left: none; border-top: 1px solid var(--card-border); }
   .wardrobe-layout { grid-template-columns: 1fr; }
-  .wardrobe-sidebar { position: static; max-height: none; }
+  .wardrobe-sidebar { display: none !important; }
+  .mobile-filter-btn { display: inline-flex !important; }
+  .looks-filters-desktop { display: none !important; }
   .post-detail-modal { flex-direction: column; height: 90vh; max-height: none; }
   .post-detail-right { width: 100%; height: 50%; border-left: none; border-top: 1px solid var(--card-border); }
+}
+
+/* Closet Mobile Right-Side Filter Slider Drawer */
+.closet-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 1200;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.closet-drawer-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.closet-right-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 320px;
+  max-width: 86vw;
+  background: var(--card);
+  border-left: 1px solid var(--border);
+  box-shadow: -10px 0 35px rgba(0, 0, 0, 0.35);
+  z-index: 1201;
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.closet-right-drawer.open {
+  transform: translateX(0);
+}
+
+.mobile-filter-btn {
+  display: none !important;
 }
 
 @media (max-width: 768px) {

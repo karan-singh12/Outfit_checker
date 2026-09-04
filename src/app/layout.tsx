@@ -7,15 +7,41 @@ import { Providers } from "./providers";
 export const metadata: Metadata = {
   title: "Threadflank — Try anything. Wear everything.",
   description: "Build your digital twin, fill your virtual wardrobe, and AI try-on any outfit from any store before you buy it.",
+  icons: {
+    icon: [
+      { url: "/images/logo.png", type: "image/png" },
+      { url: "/favicon.ico" },
+    ],
+    shortcut: "/images/logo.png",
+    apple: "/images/logo.png",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
+        <link rel="icon" href="/images/logo.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/images/logo.png" />
         <script dangerouslySetInnerHTML={{__html: `
           (function() {
             try {
+              // Suppress external chrome-extension errors from polluting Next.js dev overlay
+              window.addEventListener('error', function(e) {
+                if (e.filename && e.filename.indexOf('chrome-extension://') !== -1) {
+                  e.stopImmediatePropagation();
+                  e.preventDefault();
+                }
+              }, true);
+
+              window.addEventListener('unhandledrejection', function(e) {
+                var str = (e && e.reason && (e.reason.stack || e.reason.message || '')) + '';
+                if (str.indexOf('chrome-extension://') !== -1) {
+                  e.stopImmediatePropagation();
+                  e.preventDefault();
+                }
+              }, true);
+
               var saved = localStorage.getItem('theme');
               if (saved === 'light' || saved === 'dark') {
                 document.documentElement.setAttribute('data-theme', saved);

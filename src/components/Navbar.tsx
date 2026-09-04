@@ -78,37 +78,46 @@ export default function Navbar() {
           {/* ── Logo ── */}
           <Link href="/" className="navbar-logo">
             <ThreadflankLogo />
-            <span className="navbar-logo-text">
-              Threadflank<span className="navbar-logo-dot">.</span>
+            <span
+              className="navbar-logo-text"
+              style={{
+                background: "linear-gradient(135deg, #00c98d 0%, #0ea5e9 50%, #8b5cf6 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
+            >
+              Threadflank<span style={{ WebkitTextFillColor: "transparent" }}>.</span>
             </span>
           </Link>
 
           {/* ── Desktop Nav links (Hidden on Mobile) ── */}
           <div className="navbar-nav">
+            <Link href="/discover" className={p?.startsWith("/discover") || p?.startsWith("/trending") ? "active" : ""}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              Discover
+            </Link>
             <Link href="/studio" className={p?.startsWith("/studio") || p?.startsWith("/try-on") ? "active" : ""}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
-                <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+                <path d="M8 12h8M12 8v8"/>
               </svg>
-              Studio
+              Drape
             </Link>
-            <Link href="/trending" className={p?.startsWith("/trending") ? "active" : ""}>
+            <Link href="/outfits" className={p?.startsWith("/outfits") ? "active" : ""}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>
+                <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                <path d="M9 16l2 2 4-4"/>
               </svg>
-              Trending
+              Outfits
             </Link>
-            <Link href="/wardrobe" className={p?.startsWith("/wardrobe") ? "active" : ""}>
+            <Link href="/closet" className={p?.startsWith("/closet") || p?.startsWith("/wardrobe") || p?.startsWith("/looks") ? "active" : ""}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.84H5v10a2 2 0 002 2h10a2 2 0 002-2V10h1.15a1 1 0 00.99-.84l.58-3.57a2 2 0 00-1.34-2.23z"/>
               </svg>
-              Wardrobe
-            </Link>
-            <Link href="/looks" className={p?.startsWith("/looks") ? "active" : ""}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
-              </svg>
-              Looks
+              Closet
             </Link>
             <Link href="/messages" className={p?.startsWith("/messages") ? "active" : ""}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -152,20 +161,30 @@ export default function Navbar() {
             {/* Desktop Auth Display */}
             <div className="navbar-desktop-auth">
               {user ? (
-                <>
-                  <Link href="/profile" className="navbar-login-btn" style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                      <circle cx="12" cy="7" r="4" />
-                    </svg>
-                    {user.username || user.email.split("@")[0]}
-                  </Link>
-                  <button onClick={logout} className="navbar-cta-btn" style={{ border: "none", cursor: "pointer" }}>
-                    Logout
-                  </button>
-                </>
+                <Link
+                  href="/profile"
+                  className="navbar-mobile-profile-btn"
+                  aria-label="View Profile"
+                  title="Profile"
+                  style={{ width: 34, height: 34 }}
+                >
+                  {user.avatar ? (
+                    <img
+                      src={user.avatar.startsWith("/public") ? `http://127.0.0.1:3003${user.avatar}` : user.avatar}
+                      alt="Avatar"
+                      style={{ width: 26, height: 26, borderRadius: "50%", objectFit: "cover" }}
+                    />
+                  ) : (
+                    <span className="navbar-mobile-avatar-circle" style={{ width: 26, height: 26, fontSize: 12 }}>
+                      {(user.username || user.email || "U")[0].toUpperCase()}
+                    </span>
+                  )}
+                </Link>
               ) : (
                 <>
+                  <Link href="/pricing" className="navbar-login-btn">
+                    Pricing
+                  </Link>
                   <Link href="/login" className="navbar-login-btn">
                     Log in
                   </Link>
@@ -188,9 +207,17 @@ export default function Navbar() {
                   aria-label="View Profile"
                   title="Profile"
                 >
-                  <span className="navbar-mobile-avatar-circle">
-                    {(user.username || user.email || "U")[0].toUpperCase()}
-                  </span>
+                  {user.avatar ? (
+                    <img
+                      src={user.avatar.startsWith("/public") ? `http://127.0.0.1:3003${user.avatar}` : user.avatar}
+                      alt="Avatar"
+                      style={{ width: 26, height: 26, borderRadius: "50%", objectFit: "cover" }}
+                    />
+                  ) : (
+                    <span className="navbar-mobile-avatar-circle">
+                      {(user.username || user.email || "U")[0].toUpperCase()}
+                    </span>
+                  )}
                 </Link>
               ) : (
                 <Link href="/login" className="navbar-mobile-login-pill">
@@ -206,52 +233,52 @@ export default function Navbar() {
       {/* ── Mobile Bottom Navigation Bar ── */}
       <nav className="mobile-bottom-nav" aria-label="Mobile Navigation">
         <Link
+          href="/discover"
+          className={`mobile-nav-item ${p?.startsWith("/discover") || p?.startsWith("/trending") ? "active" : ""}`}
+        >
+          <div className="mobile-nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </div>
+          <span className="mobile-nav-label">Discover</span>
+        </Link>
+
+        <Link
           href="/studio"
           className={`mobile-nav-item ${p?.startsWith("/studio") || p?.startsWith("/try-on") ? "active" : ""}`}
         >
           <div className="mobile-nav-icon-wrap">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
-              <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+              <circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/>
             </svg>
           </div>
-          <span className="mobile-nav-label">Studio</span>
+          <span className="mobile-nav-label">Drape</span>
         </Link>
 
         <Link
-          href="/trending"
-          className={`mobile-nav-item ${p?.startsWith("/trending") ? "active" : ""}`}
+          href="/outfits"
+          className={`mobile-nav-item ${p?.startsWith("/outfits") ? "active" : ""}`}
         >
           <div className="mobile-nav-icon-wrap">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+              <path d="M9 16l2 2 4-4"/>
             </svg>
           </div>
-          <span className="mobile-nav-label">Trending</span>
+          <span className="mobile-nav-label">Outfits</span>
         </Link>
 
         <Link
-          href="/wardrobe"
-          className={`mobile-nav-item ${p?.startsWith("/wardrobe") ? "active" : ""}`}
+          href="/closet"
+          className={`mobile-nav-item ${p?.startsWith("/closet") || p?.startsWith("/wardrobe") || p?.startsWith("/looks") ? "active" : ""}`}
         >
           <div className="mobile-nav-icon-wrap">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.84H5v10a2 2 0 002 2h10a2 2 0 002-2V10h1.15a1 1 0 00.99-.84l.58-3.57a2 2 0 00-1.34-2.23z"/>
             </svg>
           </div>
-          <span className="mobile-nav-label">Wardrobe</span>
-        </Link>
-
-        <Link
-          href="/looks"
-          className={`mobile-nav-item ${p?.startsWith("/looks") ? "active" : ""}`}
-        >
-          <div className="mobile-nav-icon-wrap">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
-            </svg>
-          </div>
-          <span className="mobile-nav-label">Looks</span>
+          <span className="mobile-nav-label">Closet</span>
         </Link>
 
         <Link

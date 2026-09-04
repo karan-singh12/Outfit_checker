@@ -1,11 +1,12 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "next/navigation";
 import { uploadAvatar } from "../../services/api";
 
 export default function ProfilePage() {
-  const { user, updateProfile, loading, error, clearError, token } = useAuth();
+  const { user, updateProfile, loading, error, clearError, token, logout } = useAuth();
   const router = useRouter();
 
   const [username, setUsername] = useState("");
@@ -159,6 +160,74 @@ export default function ProfilePage() {
                 <span style={{ color: "var(--text-soft)", fontStyle: user.bio ? "normal" : "italic", lineHeight: "1.5" }}>
                   {user.bio || "No bio added yet."}
                 </span>
+              </div>
+
+              {/* Friends & Messages Quick Access */}
+              <div style={{ marginTop: "10px" }}>
+                <Link
+                  href="/messages"
+                  className="btn btn-ghost btn-sm"
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    textDecoration: "none",
+                    padding: "9px",
+                    fontSize: "12px",
+                    fontWeight: "600"
+                  }}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
+                  My Friends &amp; Chats
+                </Link>
+              </div>
+
+              {/* Log Out Action in Profile Section */}
+              <div style={{ marginTop: "8px", paddingTop: "14px", borderTop: "1px solid var(--card-border)" }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    logout();
+                    router.push("/login");
+                  }}
+                  className="btn btn-ghost"
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    color: "var(--danger, #ef4444)",
+                    borderColor: "rgba(239, 68, 68, 0.25)",
+                    background: "rgba(239, 68, 68, 0.05)",
+                    fontSize: "13px",
+                    fontWeight: "600",
+                    padding: "10px",
+                    borderRadius: "var(--r-sm)",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "rgba(239, 68, 68, 0.12)";
+                    e.currentTarget.style.borderColor = "rgba(239, 68, 68, 0.4)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "rgba(239, 68, 68, 0.05)";
+                    e.currentTarget.style.borderColor = "rgba(239, 68, 68, 0.25)";
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <polyline points="16 17 21 12 16 7" />
+                    <line x1="21" y1="12" x2="9" y2="12" />
+                  </svg>
+                  Log Out
+                </button>
               </div>
             </div>
           </div>
