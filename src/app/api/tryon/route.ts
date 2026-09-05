@@ -43,12 +43,15 @@ function buildGarmentDescription(
   avatarType: string,
   age: string,
   heightCm: string,
-  weightKg: string
+  weightKg: string,
+  skinPrompt?: string
 ): string {
+  const skinNuance = skinPrompt ? `Skin tone preservation: ${skinPrompt}. ` : "";
   return (
     `A high-quality realistic virtual try-on image. ` +
     `The person should wear the provided garment naturally and accurately. ` +
     `Preserve the identity, face, body shape, and pose of the original person exactly. ` +
+    skinNuance +
     `Fit the clothing correctly to the body with proper alignment on shoulders, arms, and torso. ` +
     `Maintain realistic fabric behavior including folds, wrinkles, and stretching. ` +
     `Match lighting, shadows, and perspective between the person and the garment. ` +
@@ -124,6 +127,7 @@ export async function POST(req: NextRequest) {
     | "upper_body"
     | "lower_body"
     | "dresses";
+  const skinPrompt = (formData.get("skinPrompt") as string) ?? "";
 
   if ((!selfieFile || selfieFile.size === 0) && !selfieUrl) {
     return NextResponse.json({ error: "selfie image or selfieUrl is required." }, { status: 400 });
@@ -156,7 +160,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 4. Create Replicate prediction
-  const garmentDescription = buildGarmentDescription(avatarType, age, heightCm, weightKg);
+  const garmentDescription = buildGarmentDescription(avatarType, age, heightCm, weightKg, skinPrompt);
 
   let predictionId: string;
   try {

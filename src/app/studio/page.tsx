@@ -5,6 +5,8 @@ import type { AvatarBodyProfile, AvatarType } from "../../components/AvatarSelec
 import { CategoryIcon, type Category } from "../closet/page";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "next/navigation";
+import SkinToneSelector, { SkinProfile, SOUTH_ASIAN_SKIN_PROFILES } from "../../components/SkinToneSelector";
+import RentBuyToggle from "../../components/RentBuyToggle";
 
 /* ── Helper to convert base64 data URL back to File ── */
 function dataURLtoFile(dataurl: string, filename: string) {
@@ -96,12 +98,13 @@ export default function StudioPage() {
   const [isGeneratingModel, setIsGeneratingModel] = useState(false);
   const [modelGender, setModelGender] = useState<"female"|"male">("female");
   const [modelAge, setModelAge] = useState("25");
-  const [modelEthnicity, setModelEthnicity] = useState("East Asian");
+  const [modelEthnicity, setModelEthnicity] = useState("South Asian");
   const [modelStyle, setModelStyle] = useState("casual clothing");
   const [modelBackground, setModelBackground] = useState("modern studio background");
   const [customModelPrompt, setCustomModelPrompt] = useState("");
   const [aiBaseImageUrl, setAiBaseImageUrl] = useState<string | null>(null);
   const [bodyProfile, setBodyProfile] = useState<AvatarBodyProfile>({ age: 25, heightCm: 170, weightKg: 65 });
+  const [selectedSkinTone, setSelectedSkinTone] = useState<SkinProfile>(SOUTH_ASIAN_SKIN_PROFILES[1]);
 
   // Look saving states
   const [showSaveModal, setShowSaveModal] = useState(false);
@@ -116,8 +119,32 @@ export default function StudioPage() {
   const [isFetching, setIsFetching] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
-  // On mount: Load onboarding metrics/selfie if stored in sessionStorage
+  // On mount: Load persistent body twin & onboarding metrics
   useEffect(() => {
+    // 1. Check persistent digital twin in localStorage
+    const savedTwin = localStorage.getItem("tf_body_twin");
+    if (savedTwin) {
+      try {
+        const twin = JSON.parse(savedTwin);
+        if (twin.skinToneId) {
+          const matchedTone = SOUTH_ASIAN_SKIN_PROFILES.find((p) => p.id === twin.skinToneId);
+          if (matchedTone) setSelectedSkinTone(matchedTone);
+        }
+        if (twin.gender) setModelGender(twin.gender);
+        if (twin.age) setModelAge(String(twin.age));
+        if (twin.avatarUrl) setAiBaseImageUrl(twin.avatarUrl);
+        if (twin.heightCm || twin.weightKg) {
+          setBodyProfile((prev) => ({
+            ...prev,
+            heightCm: twin.heightCm || prev.heightCm,
+            weightKg: twin.weightKg || prev.weightKg,
+          }));
+        }
+      } catch (e) {
+        console.error("Failed to parse persistent digital twin", e);
+      }
+    }
+
     const savedSelfie = sessionStorage.getItem("setup_selfie_data");
     if (savedSelfie) {
       if (savedSelfie.startsWith("data:")) {
@@ -225,7 +252,8 @@ export default function StudioPage() {
           style: modelStyle,
           background: modelBackground,
           ethnicity: modelEthnicity,
-          customPrompt: customModelPrompt
+          customPrompt: customModelPrompt,
+          skinPrompt: selectedSkinTone.diffusionPrompt,
         })
       });
 
@@ -240,6 +268,15 @@ export default function StudioPage() {
       setSelfiePreview(null);
       
       sessionStorage.setItem("setup_selfie_data", data.resultImageUrl);
+      localStorage.setItem("tf_body_twin", JSON.stringify({
+        gender: modelGender,
+        age: modelAge,
+        ethnicity: modelEthnicity,
+        skinToneId: selectedSkinTone.id,
+        avatarUrl: data.resultImageUrl,
+        heightCm: bodyProfile.heightCm,
+        weightKg: bodyProfile.weightKg,
+      }));
     } catch (e) {
       setGenError(e instanceof Error ? e.message : "AI model generation failed");
     } finally {
@@ -269,6 +306,7 @@ export default function StudioPage() {
         form.append("heightCm", String(bodyProfile.heightCm));
         form.append("weightKg", String(bodyProfile.weightKg));
         form.append("garmentCategory", "upper_body");
+        form.append("skinPrompt", selectedSkinTone.diffusionPrompt);
 
         const res = await fetch("/api/tryon", { method: "POST", body: form });
         if (!res.ok) {
@@ -292,6 +330,7 @@ export default function StudioPage() {
         form.append("heightCm", String(bodyProfile.heightCm));
         form.append("weightKg", String(bodyProfile.weightKg));
         form.append("garmentCategory", look.dress ? "dresses" : "upper_body");
+        form.append("skinPrompt", selectedSkinTone.diffusionPrompt);
 
         const res = await fetch("/api/tryon", { method: "POST", body: form });
         if (!res.ok) {
@@ -485,6 +524,21 @@ export default function StudioPage() {
                   />
                 </div>
 
+                {/* Indian Skin Tone Accuracy Engine */}
+                <div style={{ marginTop: 6, marginBottom: 6 }}>
+                  <SkinToneSelector
+                    selectedId={selectedSkinTone.id}
+                    onSelect={(profile) => {
+                      setSelectedSkinTone(profile);
+                      const twin = JSON.parse(localStorage.getItem("tf_body_twin") || "{}");
+                      localStorage.setItem("tf_body_twin", JSON.stringify({
+                        ...twin,
+                        skinToneId: profile.id,
+                      }));
+                    }}
+                  />
+                </div>
+
                 <button
                   type="button"
                   className="btn btn-gradient btn-sm"
@@ -570,7 +624,12 @@ export default function StudioPage() {
                 </button>
               </div>
               {fetchError && <p style={{ fontSize:11, color:"var(--danger)" }}>{fetchError}</p>}
-              {garmentImageUrl && <img src={garmentImageUrl} alt="Fetched" style={{ width:"100%", borderRadius:"var(--r-md)", border:"1px solid var(--card-border)", marginTop:8 }} />}
+              {garmentImageUrl && (
+                <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 8 }}>
+                  <img src={garmentImageUrl} alt="Fetched" style={{ width:"100%", borderRadius:"var(--r-md)", border:"1px solid var(--card-border)" }} />
+                  <RentBuyToggle buyPrice={4990} />
+                </div>
+              )}
             </div>
           </div>
         ) : (

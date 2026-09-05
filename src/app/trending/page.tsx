@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import RentBuyToggle from "../../components/RentBuyToggle";
 
 export interface TaggedProduct {
   id: string;
@@ -572,7 +573,10 @@ export default function TrendingPage() {
                           <div className="ig-tagged-info">
                             <span className="ig-tagged-brand">{product.brand}</span>
                             <h4 className="ig-tagged-name">{product.name}</h4>
-                            <span className="ig-tagged-price">{formatPrice(product.price)}</span>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
+                              <span className="ig-tagged-price">{formatPrice(product.price)}</span>
+                              <RentBuyToggle buyPrice={product.price} compact />
+                            </div>
                           </div>
                           <button
                             type="button"

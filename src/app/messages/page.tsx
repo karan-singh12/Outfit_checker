@@ -13,6 +13,7 @@ import {
   FriendUser,
   FriendRequestItem,
 } from "../../services/api";
+import OutfitPollCard from "../../components/OutfitPollCard";
 
 interface ChatRoom {
   id: string; // conv_ID or group_ID
@@ -77,6 +78,7 @@ export default function MessagesPage() {
   const [suggestions, setSuggestions] = useState<FriendUser[]>([]);
   const [friendsLoading, setFriendsLoading] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showPollModal, setShowPollModal] = useState(false);
   const [modalInput, setModalInput] = useState("");
   const [searchResults, setSearchResults] = useState<FriendUser[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -314,6 +316,18 @@ export default function MessagesPage() {
     setIsTyping(false);
 
     setInputText("");
+  };
+
+  // Send Outfit Poll
+  const sendPoll = (pollData: any) => {
+    if (!socket || !activeRoom) return;
+    const pollContent = `[POLL]:${JSON.stringify(pollData)}`;
+    const payload = activeRoom.type === "dm"
+      ? { conversationId: activeRoom.conversationId, content: pollContent }
+      : { groupId: activeRoom.groupId, content: pollContent };
+    socket.emit("sendMessage", payload);
+    setShowPollModal(false);
+    showToast("Outfit poll shared with chat!");
   };
 
   // Search users live in Add Friend Modal
@@ -946,8 +960,19 @@ export default function MessagesPage() {
                           {getSafeName(msg.sender, "User")}
                         </p>
                       )}
-                      <div className="message-bubble">
-                        {msg.content}
+                      <div className="message-bubble" style={msg.content.startsWith("[POLL]:") ? { background: "transparent", padding: 0, border: "none", boxShadow: "none" } : undefined}>
+                        {msg.content.startsWith("[POLL]:") ? (
+                          (() => {
+                            try {
+                              const pollData = JSON.parse(msg.content.replace("[POLL]:", ""));
+                              return <OutfitPollCard {...pollData} compact />;
+                            } catch {
+                              return msg.content;
+                            }
+                          })()
+                        ) : (
+                          msg.content
+                        )}
                         {msg.attachmentUrl && (
                           <div style={{ marginTop: 8 }}>
                             <img src={msg.attachmentUrl} alt="Attachment" style={{ maxWidth: "100%", borderRadius: "var(--r-xs)", display: "block" }} />
@@ -975,6 +1000,16 @@ export default function MessagesPage() {
 
             {/* Message Input Footer */}
             <div className="messages-chat-footer">
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <button
+                  type="button"
+                  onClick={() => setShowPollModal(true)}
+                  className="glass-pill"
+                  style={{ border: "1px solid rgba(0, 201, 141, 0.35)", color: "#00c98d", cursor: "pointer", background: "rgba(0, 201, 141, 0.08)" }}
+                >
+                  📊 Ask Look Opinion (Poll)
+                </button>
+              </div>
               <form className="chat-input-form" onSubmit={sendMessage} style={{ display: "flex", gap: 8 }}>
                 <input
                   type="text"
@@ -1186,6 +1221,182 @@ export default function MessagesPage() {
               )}
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* ─── CREATE OUTFIT POLL MODAL ─────────────────────────────── */}
+      {showPollModal && (
+        <div
+          className="modal-backdrop"
+          onClick={(e) => e.target === e.currentTarget && setShowPollModal(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 1000,
+            background: "rgba(0, 0, 0, 0.7)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 16,
+          }}
+        >
+          <div
+            className="glass-panel-luxury specular-top"
+            style={{
+              width: "100%",
+              maxWidth: 480,
+              padding: 24,
+              display: "flex",
+              flexDirection: "column",
+              gap: 16,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div>
+                <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: "var(--text)" }}>
+                  Ask for Look Opinion
+                </h3>
+                <p style={{ fontSize: 11.5, color: "var(--text-soft)", margin: "2px 0 0" }}>
+                  Send an interactive poll directly to {activeRoom?.name || "this chat"}.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowPollModal(false)}
+                style={{ background: "none", border: "none", color: "var(--text-soft)", cursor: "pointer", fontSize: 16 }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Quick Presets */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-soft)", textTransform: "uppercase" }}>
+                Choose a Poll Template:
+              </span>
+
+              {/* Template 1: Look Duel */}
+              <button
+                type="button"
+                onClick={() =>
+                  sendPoll({
+                    id: "poll-" + Date.now(),
+                    title: "Which look should I wear tonight?",
+                    creatorName: user?.username || "You",
+                    type: "duel",
+                    options: [
+                      { id: "a", label: "Look A: Summer Floral", image: "/images/look_brunch.png", votes: 0 },
+                      { id: "b", label: "Look B: Black Tailored", image: "/images/look_formal.png", votes: 0 },
+                    ],
+                  })
+                }
+                style={{
+                  padding: "12px 14px",
+                  borderRadius: "var(--r-md)",
+                  background: "rgba(255, 255, 255, 0.03)",
+                  border: "1px solid var(--border)",
+                  textAlign: "left",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <div>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", margin: "0 0 2px" }}>
+                    ⚔️ Look Duel (A vs B)
+                  </p>
+                  <p style={{ fontSize: 11, color: "var(--text-soft)", margin: 0 }}>
+                    Compare two outfits side-by-side with live percentage bars
+                  </p>
+                </div>
+                <span style={{ color: "var(--accent)", fontSize: 12, fontWeight: 700 }}>Send →</span>
+              </button>
+
+              {/* Template 2: Style Verdict */}
+              <button
+                type="button"
+                onClick={() =>
+                  sendPoll({
+                    id: "poll-" + Date.now(),
+                    title: "Should I buy or rent this outfit?",
+                    creatorName: user?.username || "You",
+                    type: "verdict",
+                    options: [
+                      { id: "opt-1", label: "🔥 Definitely, looks incredible!", votes: 0 },
+                      { id: "opt-2", label: "👌 Rent it first for the event", votes: 0 },
+                      { id: "opt-3", label: "❌ Keep looking", votes: 0 },
+                    ],
+                  })
+                }
+                style={{
+                  padding: "12px 14px",
+                  borderRadius: "var(--r-md)",
+                  background: "rgba(255, 255, 255, 0.03)",
+                  border: "1px solid var(--border)",
+                  textAlign: "left",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <div>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", margin: "0 0 2px" }}>
+                    ⭐ Buy vs. Rent Verdict
+                  </p>
+                  <p style={{ fontSize: 11, color: "var(--text-soft)", margin: 0 }}>
+                    Ask friends whether an item is worth buying or renting
+                  </p>
+                </div>
+                <span style={{ color: "var(--accent)", fontSize: 12, fontWeight: 700 }}>Send →</span>
+              </button>
+
+              {/* Template 3: Skin Tone Harmony */}
+              <button
+                type="button"
+                onClick={() =>
+                  sendPoll({
+                    id: "poll-" + Date.now(),
+                    title: "Does this color flatter my skin tone?",
+                    creatorName: user?.username || "You",
+                    type: "verdict",
+                    options: [
+                      { id: "opt-pop", label: "✨ Pops gorgeously on you!", votes: 0 },
+                      { id: "opt-subtle", label: "👍 Subtle and elegant", votes: 0 },
+                      { id: "opt-wash", label: "👎 Washes out your tone slightly", votes: 0 },
+                    ],
+                  })
+                }
+                style={{
+                  padding: "12px 14px",
+                  borderRadius: "var(--r-md)",
+                  background: "rgba(255, 255, 255, 0.03)",
+                  border: "1px solid var(--border)",
+                  textAlign: "left",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <div>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", margin: "0 0 2px" }}>
+                    🎨 Skin Tone Color Check
+                  </p>
+                  <p style={{ fontSize: 11, color: "var(--text-soft)", margin: 0 }}>
+                    Get friend feedback on garment contrast and undertone match
+                  </p>
+                </div>
+                <span style={{ color: "var(--accent)", fontSize: 12, fontWeight: 700 }}>Send →</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

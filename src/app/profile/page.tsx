@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "next/navigation";
 import { uploadAvatar } from "../../services/api";
+import { SOUTH_ASIAN_SKIN_PROFILES } from "../../components/SkinToneSelector";
+import WhatsAppModal from "../../components/WhatsAppModal";
 
 export default function ProfilePage() {
   const { user, updateProfile, loading, error, clearError, token, logout } = useAuth();
@@ -17,6 +19,8 @@ export default function ProfilePage() {
   const [isUploading, setIsUploading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [savedTwin, setSavedTwin] = useState<any>(null);
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
 
   // Sync user details when they load
   useEffect(() => {
@@ -26,6 +30,14 @@ export default function ProfilePage() {
       setLocation(user.location || "");
       setPhone(user.phone || "");
       setAvatar(user.avatar || "");
+    }
+    if (typeof window !== "undefined") {
+      const twinData = localStorage.getItem("tf_body_twin");
+      if (twinData) {
+        try {
+          setSavedTwin(JSON.parse(twinData));
+        } catch {}
+      }
     }
   }, [user]);
 
@@ -386,7 +398,105 @@ export default function ProfilePage() {
 
         </div>
 
+        {/* ── Additional Section: Persistent Digital Twin & WhatsApp Assistant ── */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "24px" }}>
+          
+          {/* Card 3: Persistent Digital Twin */}
+          <div className="glass-panel-luxury specular-top" style={{ padding: "26px 22px", display: "flex", flexDirection: "column", gap: 14 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 16 }}>✨</span>
+                <h4 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "var(--text)" }}>Persistent Digital Twin</h4>
+              </div>
+              <span className="glass-pill" style={{ color: "#00c98d", borderColor: "rgba(0, 201, 141, 0.3)" }}>
+                {savedTwin ? "Active & Synced" : "Default Model"}
+              </span>
+            </div>
+
+            <p style={{ fontSize: 12.5, color: "var(--text-soft)", lineHeight: 1.5, margin: 0 }}>
+              Your personal AI avatar model used automatically across every virtual try-on session.
+            </p>
+
+            <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 14px", background: "rgba(255, 255, 255, 0.03)", borderRadius: "var(--r-sm)", border: "1px solid var(--border)" }}>
+              <img
+                src={savedTwin?.avatarUrl || "/images/female_avatar.png"}
+                alt="Digital Twin"
+                style={{ width: 52, height: 52, borderRadius: "50%", objectFit: "cover", border: "2px solid var(--purple)" }}
+              />
+              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>
+                  {savedTwin ? `${savedTwin.gender === "male" ? "Male" : "Female"} · ${savedTwin.age || 25} yrs` : "Default Studio Avatar"}
+                </span>
+                <span style={{ fontSize: 11.5, color: "var(--text-soft)" }}>
+                  Skin: {savedTwin?.skinToneId ? SOUTH_ASIAN_SKIN_PROFILES.find(p => p.id === savedTwin.skinToneId)?.name || savedTwin.skinToneId : "Golden Wheatish (NC30)"}
+                </span>
+                <span style={{ fontSize: 11, color: "var(--muted)" }}>
+                  Proportions: {savedTwin?.heightCm || 170} cm · {savedTwin?.weightKg || 65} kg
+                </span>
+              </div>
+            </div>
+
+            <Link href="/studio" className="btn btn-gradient btn-sm" style={{ textAlign: "center", justifyContent: "center", marginTop: "auto" }}>
+              Customize Twin in Studio →
+            </Link>
+          </div>
+
+          {/* Card 4: WhatsApp Try-On Bot */}
+          <div className="glass-panel-luxury specular-top" style={{ padding: "26px 22px", display: "flex", flexDirection: "column", gap: 14 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ width: 22, height: 22, borderRadius: "50%", background: "#25D366", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12 }}>
+                  WA
+                </div>
+                <h4 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "var(--text)" }}>WhatsApp Try-On Assistant</h4>
+              </div>
+              <span className="glass-pill" style={{ color: user.phone ? "#25D366" : "var(--muted)", borderColor: user.phone ? "rgba(37, 211, 102, 0.3)" : "var(--border)" }}>
+                {user.phone ? "Linked" : "Not Linked"}
+              </span>
+            </div>
+
+            <p style={{ fontSize: 12.5, color: "var(--text-soft)", lineHeight: 1.5, margin: 0 }}>
+              Send Zara, Myntra, or Amazon product links to our WhatsApp number and get an instant AI try-on on your twin.
+            </p>
+
+            <div style={{ padding: "12px 14px", background: "rgba(37, 211, 102, 0.06)", borderRadius: "var(--r-sm)", border: "1px solid rgba(37, 211, 102, 0.2)", fontSize: 12, color: "var(--text)" }}>
+              {user.phone ? (
+                <div>
+                  <span style={{ color: "#25D366", fontWeight: 700 }}>✓ Linked Number:</span> {user.phone}
+                </div>
+              ) : (
+                <span style={{ color: "var(--text-soft)" }}>
+                  No phone number linked yet. Connect to activate WhatsApp 60-second try-on!
+                </span>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowWhatsAppModal(true)}
+              className="btn btn-sm"
+              style={{
+                background: "linear-gradient(135deg, #25D366, #128C7E)",
+                color: "#fff",
+                fontWeight: 700,
+                justifyContent: "center",
+                marginTop: "auto",
+                border: "none",
+              }}
+            >
+              {user.phone ? "Launch WhatsApp Assistant ↗" : "Link WhatsApp Number"}
+            </button>
+          </div>
+
+        </div>
+
       </div>
+
+      <WhatsAppModal
+        isOpen={showWhatsAppModal}
+        onClose={() => setShowWhatsAppModal(false)}
+        userPhone={user.phone || ""}
+      />
     </div>
   );
 }

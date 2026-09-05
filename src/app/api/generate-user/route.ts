@@ -55,15 +55,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
 
-  const { gender, age, style, background, ethnicity, customPrompt } = body;
+  const { gender, age, style, background, ethnicity, customPrompt, skinPrompt } = body;
 
   const genderWord = gender === "male" ? "male" : gender === "female" ? "female" : "non-binary";
   const ageWord = age ? `${age}-year-old` : "25-year-old";
   const ethnicityWord = ethnicity ? `${ethnicity} ` : "";
   const clothingStyle = style || "casual clothing";
   const bgStyle = background || "plain studio background";
+  const skinNuance = skinPrompt ? `${skinPrompt}, ` : "";
 
-  let prompt = `Full body fashion portrait of a beautiful ${ageWord} ${ethnicityWord}${genderWord} model, wearing ${clothingStyle}, standing pose, looking at camera, ${bgStyle}, photorealistic, studio lighting, clean composition, high-fashion photography, shot on 85mm lens, highly detailed, sharp focus.`;
+  let prompt = `Full body fashion portrait of a beautiful ${ageWord} ${ethnicityWord}${genderWord} model, ${skinNuance}wearing ${clothingStyle}, standing pose, looking at camera, ${bgStyle}, photorealistic, studio lighting, clean composition, high-fashion photography, shot on 85mm lens, highly detailed, sharp focus.`;
 
   if (customPrompt && customPrompt.trim()) {
     prompt = customPrompt.trim();

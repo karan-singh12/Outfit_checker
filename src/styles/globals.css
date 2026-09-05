@@ -6591,4 +6591,173 @@ img { max-width: 100%; display: block; }
   max-width: 360px;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   LUXURY GLASSMORPHISM & EDITORIAL FINISH (THREADFLANK V2)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.glass-panel-luxury {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%),
+              radial-gradient(ellipse at top left, rgba(0, 201, 141, 0.06), transparent 70%),
+              rgba(13, 17, 26, 0.75);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.5),
+              inset 0 1px 0 rgba(255, 255, 255, 0.2),
+              inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  border-radius: var(--r-lg);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-panel-luxury:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.65),
+              0 0 30px rgba(0, 201, 141, 0.12),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="light"] .glass-panel-luxury {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.65) 100%),
+              radial-gradient(ellipse at top left, rgba(0, 201, 141, 0.08), transparent 70%);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 14px 34px -8px rgba(0, 0, 0, 0.08),
+              inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* Specular Reflection Top Edge */
+.specular-top {
+  position: relative;
+}
+.specular-top::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 20px;
+  right: 20px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Glass Pill Badge */
+.glass-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: var(--r-full);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: all 0.2s ease;
+}
+.glass-pill:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
+/* Skin Tone Swatches */
+.skin-tone-ring {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  padding: 3px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  background: transparent;
+}
+.skin-tone-ring.active {
+  border-color: #00c98d;
+  box-shadow: 0 0 14px rgba(0, 201, 141, 0.45);
+  transform: scale(1.08);
+}
+.skin-tone-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4), 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Rent vs Buy Segmented Switch */
+.rent-buy-container {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(18, 24, 38, 0.6);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 3px;
+  border-radius: var(--r-full);
+  position: relative;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+.rent-buy-btn {
+  padding: 4px 14px;
+  border-radius: var(--r-full);
+  border: none;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--text-soft);
+  background: transparent;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.rent-buy-btn.active {
+  background: linear-gradient(135deg, #00c98d 0%, #0ea5e9 100%);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 201, 141, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Poll Option Bar */
+.poll-bar-track {
+  width: 100%;
+  height: 38px;
+  border-radius: var(--r-sm);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+}
+.poll-bar-track:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.07);
+}
+.poll-bar-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: linear-gradient(90deg, rgba(0, 201, 141, 0.2), rgba(14, 165, 233, 0.3));
+  border-right: 2px solid #00c98d;
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+.poll-bar-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+
 

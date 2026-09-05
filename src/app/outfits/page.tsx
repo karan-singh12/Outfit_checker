@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import RentBuyToggle from "../../components/RentBuyToggle";
+import OutfitPollCard from "../../components/OutfitPollCard";
 
 type EventType = "wedding" | "work" | "party" | "date" | "casual" | "formal" | "travel";
 type DressCode = "smart-casual" | "formal" | "black-tie" | "casual" | "business";
@@ -76,6 +78,7 @@ export default function OutfitsPage() {
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [savedLooks, setSavedLooks] = useState<Set<string>>(new Set());
+  const [activePollLookId, setActivePollLookId] = useState<string | null>(null);
 
   const canSubmit = eventType && occasion.trim();
 
@@ -256,20 +259,20 @@ export default function OutfitsPage() {
             Found <strong style={{ color: "var(--text)" }}>{MOCK_SUGGESTIONS.length} outfit combinations</strong> from your closet, ranked by fit for this occasion.
           </p>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
             {MOCK_SUGGESTIONS.map((s, idx) => (
-              <div key={s.id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--r-lg)", overflow: "hidden" }}>
+              <div key={s.id} className="glass-panel-luxury specular-top" style={{ overflow: "hidden" }}>
                 {/* Card Header */}
                 <div style={{ padding: "18px 20px 14px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: "50%", background: "color-mix(in srgb, var(--accent) 15%, transparent)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "var(--accent)" }}>
+                    <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg, rgba(0, 201, 141, 0.2), rgba(14, 165, 233, 0.2))", border: "1px solid rgba(0, 201, 141, 0.35)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "var(--accent)" }}>
                       {idx + 1}
                     </div>
                     <div>
-                      <p style={{ fontSize: 15, fontWeight: 600, color: "var(--text)" }}>{s.name}</p>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+                      <p style={{ fontSize: 15, fontWeight: 600, color: "var(--text)", margin: 0 }}>{s.name}</p>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3 }}>
                         <div style={{ height: 4, width: 60, borderRadius: 99, background: "var(--border)", overflow: "hidden" }}>
-                          <div style={{ height: "100%", width: `${s.confidence}%`, background: "var(--accent)", borderRadius: 99 }} />
+                          <div style={{ height: "100%", width: `${s.confidence}%`, background: "linear-gradient(90deg, #00c98d, #0ea5e9)", borderRadius: 99 }} />
                         </div>
                         <span style={{ fontSize: 11, color: "var(--text-soft)" }}>{s.confidence}% match</span>
                       </div>
@@ -292,7 +295,7 @@ export default function OutfitsPage() {
                 <div style={{ padding: "16px 20px" }}>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
                     {s.pieces.map((piece, pi) => (
-                      <div key={pi} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 12px", background: "var(--bg)", borderRadius: "var(--r-sm)", border: "1px solid var(--border)" }}>
+                      <div key={pi} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 12px", background: "rgba(255, 255, 255, 0.03)", borderRadius: "var(--r-sm)", border: "1px solid var(--border)" }}>
                         <div style={{ width: 10, height: 10, borderRadius: "50%", background: piece.color, border: "1px solid var(--border)", flexShrink: 0 }} />
                         <span style={{ fontSize: 12, color: "var(--text)", fontWeight: 500 }}>{piece.name}</span>
                         <span style={{ fontSize: 11, color: "var(--text-soft)" }}>{piece.category}</span>
@@ -301,25 +304,54 @@ export default function OutfitsPage() {
                   </div>
 
                   {s.missing.length > 0 && (
-                    <div style={{ marginBottom: 14, padding: "10px 14px", background: "color-mix(in srgb, #f59e0b 8%, transparent)", borderRadius: "var(--r-sm)", border: "1px solid color-mix(in srgb, #f59e0b 25%, transparent)", display: "flex", alignItems: "flex-start", gap: 8 }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginTop: 1, flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                      <p style={{ fontSize: 12, color: "var(--text-soft)", lineHeight: 1.5 }}>
-                        Missing from closet: <strong style={{ color: "var(--text)" }}>{s.missing.map(m => m.name).join(", ")}</strong>
-                        {budget && <> — within {budget} budget</>}
-                      </p>
+                    <div style={{ marginBottom: 14, padding: "12px 16px", background: "rgba(245, 158, 11, 0.08)", borderRadius: "var(--r-md)", border: "1px solid rgba(245, 158, 11, 0.25)", display: "flex", flexDirection: "column", gap: 8 }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                          <p style={{ fontSize: 12, color: "var(--text-soft)", lineHeight: 1.5, margin: 0 }}>
+                            Missing from closet: <strong style={{ color: "var(--text)" }}>{s.missing.map(m => m.name).join(", ")}</strong>
+                            {budget && <> — within {budget} budget</>}
+                          </p>
+                        </div>
+                        <RentBuyToggle buyPrice={2990} rentalPrice={499} compact />
+                      </div>
                     </div>
                   )}
 
                   <p style={{ fontSize: 13, color: "var(--text-soft)", lineHeight: 1.6, marginBottom: 14 }}>{s.note}</p>
 
-                  <div style={{ display: "flex", gap: 8 }}>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                     <Link href="/studio" className="btn btn-gradient btn-sm" style={{ flex: 1, textAlign: "center", justifyContent: "center" }}>
                       Try On in Drape
                     </Link>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      style={{ flex: 1 }}
+                      onClick={() => setActivePollLookId(activePollLookId === s.id ? null : s.id)}
+                    >
+                      {activePollLookId === s.id ? "Close Poll" : "Ask Friends (Poll)"}
+                    </button>
                     <button type="button" className="btn btn-ghost btn-sm" style={{ flex: 1 }} onClick={() => toggleSave(s.id)}>
                       {savedLooks.has(s.id) ? "Saved to Closet" : "Save to Closet"}
                     </button>
                   </div>
+
+                  {/* Active Poll Card */}
+                  {activePollLookId === s.id && (
+                    <div style={{ marginTop: 16 }}>
+                      <OutfitPollCard
+                        id={`poll-${s.id}`}
+                        title={`Should I wear "${s.name}" for ${occasion || "this event"}?`}
+                        type="verdict"
+                        options={[
+                          { id: "opt-love", label: "🔥 Absolutely stunning!", votes: 16 },
+                          { id: "opt-safe", label: "👌 Clean & elegant", votes: 9 },
+                          { id: "opt-skip", label: "❌ Look for something else", votes: 3 },
+                        ]}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

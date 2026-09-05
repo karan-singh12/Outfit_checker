@@ -3,6 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import WhatsAppModal from "./WhatsAppModal";
 
 /* ── Threadflank AI luxury logo mark ── */
 function ThreadflankLogo() {
@@ -37,6 +38,7 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const { user, logout } = useAuth();
 
   useEffect(() => {
@@ -129,6 +131,29 @@ export default function Navbar() {
 
           {/* ── Right Actions & Theme Toggle ── */}
           <div className="navbar-right">
+            {/* WhatsApp Try-On Bot Quick Launcher */}
+            <button
+              type="button"
+              onClick={() => setShowWhatsAppModal(true)}
+              className="glass-pill"
+              style={{
+                background: "rgba(37, 211, 102, 0.12)",
+                borderColor: "rgba(37, 211, 102, 0.35)",
+                color: "#25D366",
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "5px 12px",
+              }}
+              title="Try on outfits via WhatsApp"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.311.045-.698.072-2.371-.62-1.415-.588-2.316-2.029-2.387-2.123-.07-.093-.578-.77-.578-1.467 0-.698.365-1.041.496-1.185.13-.144.286-.18.382-.18.096 0 .192.001.275.006.09.004.21-.034.329.251.125.298.428 1.042.466 1.119.038.077.064.168.013.272-.051.103-.076.168-.152.257-.076.09-.16.201-.229.27-.076.077-.156.161-.067.315.089.153.396.654.85 1.059.584.521 1.077.683 1.23.76.153.077.244.064.334-.038.09-.103.382-.446.484-.599.103-.153.205-.128.345-.077.14.051.888.419 1.041.496.153.076.255.115.293.18.038.064.038.371-.106.776zM12 2C6.477 2 2 6.477 2 12c0 1.891.524 3.662 1.435 5.176L2 22l4.981-1.396A9.957 9.957 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z" />
+              </svg>
+              <span>WhatsApp Bot</span>
+            </button>
+
             {/* Theme Switcher Button */}
             <button
               type="button"
@@ -293,6 +318,13 @@ export default function Navbar() {
           <span className="mobile-nav-label">Messages</span>
         </Link>
       </nav>
+
+      {/* ── WhatsApp Try-On Assistant Modal ── */}
+      <WhatsAppModal
+        isOpen={showWhatsAppModal}
+        onClose={() => setShowWhatsAppModal(false)}
+        userPhone={user?.phone || ""}
+      />
     </>
   );
 }
