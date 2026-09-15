@@ -69,51 +69,6 @@ const DEMO_GARMENTS: GarmentDemo[] = [
   },
 ];
 
-const CODE_SNIPPETS = {
-  html: `<!-- 1. Include Threadflank VTON Engine SDK -->
-<script src="https://cdn.threadflank.com/v2/drape-widget.min.js" async></script>
-
-<!-- 2. Mount Try-On Button inside your Product Details Page -->
-<button 
-  class="tf-tryon-trigger"
-  data-store-id="zara_retail_in"
-  data-product-sku="ZR-90214-BLZ"
-  data-product-url="https://zara.com/in/tailored-blazer"
-  data-garment-image="https://cdn.store.com/garment.jpg">
-  ✨ Try on Your Body (Threadflank AI)
-</button>`,
-
-  shopify: `{% comment %} Threadflank Shopify App Snippet (theme.liquid) {% endcomment %}
-{{ 'threadflank-vton.css' | asset_url | stylesheet_tag }}
-
-<div id="threadflank-widget-container"
-     data-customer-id="{{ customer.id | default: 'guest' }}"
-     data-product-id="{{ product.id }}"
-     data-product-title="{{ product.title | escape }}"
-     data-product-image="{{ product.featured_image | image_url: width: 1200 }}"
-     data-product-price="{{ product.price | money_without_currency }}">
-</div>
-<script src="https://cdn.threadflank.com/shopify/vton-embed.js" defer></script>`,
-
-  react: `import { ThreadflankTryOnButton } from '@threadflank/react-sdk';
-
-export function ProductDetails({ product }) {
-  return (
-    <div className="product-actions">
-      <ThreadflankTryOnButton
-        apiKey={process.env.NEXT_PUBLIC_THREADFLANK_KEY}
-        productSku={product.sku}
-        garmentImageUrl={product.highResImage}
-        category={product.category}
-        onTryOnComplete={(renderResult) => {
-          console.log("Photorealistic render completed:", renderResult.imageUrl);
-        }}
-      />
-    </div>
-  );
-}`,
-};
-
 const FAQS = [
   {
     q: "Does the AI try-on preserve my real face, skin tone, and body proportions?",
@@ -143,7 +98,6 @@ const FAQS = [
 
 export default function LandingPage() {
   const [selectedGarmentIndex, setSelectedGarmentIndex] = useState(0);
-  const [activeCodeSnippet, setActiveCodeSnippet] = useState<"html" | "shopify" | "react">("html");
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const [urlInput, setUrlInput] = useState("");
 
@@ -202,15 +156,15 @@ export default function LandingPage() {
           <div className="tf-metric-item">
             <span className="tf-metric-val">185,000+</span> Outfits Draped
           </div>
-          <span style={{ color: "var(--card-border)" }}>•</span>
+          <span style={{ color: "var(--muted)", opacity: 0.6 }}>•</span>
           <div className="tf-metric-item">
             <span className="tf-metric-val">38%</span> Return Rate Reduction
           </div>
-          <span style={{ color: "var(--card-border)" }}>•</span>
+          <span style={{ color: "var(--muted)", opacity: 0.6 }}>•</span>
           <div className="tf-metric-item">
             <span className="tf-metric-val">4.9 / 5</span> Stylist Trust Index
           </div>
-          <span style={{ color: "var(--card-border)" }}>•</span>
+          <span style={{ color: "var(--muted)", opacity: 0.6 }}>•</span>
           <div className="tf-metric-item">
             <span className="tf-metric-val">28</span> Skin Tone Calibrations
           </div>
@@ -220,22 +174,13 @@ export default function LandingPage() {
         <div className="tf-sandbox-wrap">
           {/* Header Bar */}
           <div className="tf-sandbox-header">
-            <div className="tf-window-dots">
-              <span className="cp-dot red" />
-              <span className="cp-dot yellow" />
-              <span className="cp-dot green" />
-              <span className="font-mono" style={{ fontSize: 11, color: "var(--muted)", marginLeft: 6 }}>
-                vton-core-runtime · IDM-VTON Latent Diffusion active
-              </span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span className="tf-preview-tag success" style={{ margin: 0 }}>
-                ● GPU Latency: 0.8s
-              </span>
-              <span style={{ fontSize: 11, color: "var(--text-soft)", fontFamily: "monospace" }}>
-                Preservation: 99.4%
-              </span>
-            </div>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text)", display: "flex", alignItems: "center", gap: 8 }}>
+              <span className="tf-pulse-dot" />
+              Live Preview
+            </span>
+            <span style={{ fontSize: 12, color: "var(--muted)" }}>
+              Pick a look below to see it drape instantly
+            </span>
           </div>
 
           {/* Garment Selector Tabs */}
@@ -281,7 +226,7 @@ export default function LandingPage() {
             {/* Box 2: Scraped Garment */}
             <div className="tf-preview-card">
               <span className="tf-preview-tag">02 · Scraped Garment</span>
-              <div className="tf-preview-img-box" style={{ background: "rgba(255,255,255,0.03)" }}>
+              <div className="tf-preview-img-box">
                 <img src={currentGarment.garmentImg} alt={currentGarment.name} />
               </div>
               <div style={{ marginTop: 12, textAlign: "center" }}>
@@ -362,7 +307,7 @@ export default function LandingPage() {
           backdropFilter: "blur(28px) saturate(180%)",
           WebkitBackdropFilter: "blur(28px) saturate(180%)",
           background: "linear-gradient(180deg, color-mix(in srgb, var(--bg) 60%, transparent) 0%, color-mix(in srgb, var(--bg) 92%, transparent) 14%, var(--bg) 100%)",
-          borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+          borderTop: "1px solid var(--card-border)",
         }}
       >
         <div className="tf-pro-container">
@@ -526,8 +471,8 @@ export default function LandingPage() {
                     <span><strong>Confidence Rating:</strong> Every recommended combination is scored for dress code compliance.</span>
                   </div>
                 </div>
-                <Link href="/outfits" className="btn-nf-primary" style={{ borderRadius: 10, padding: "10px 22px", background: "var(--pink)", borderColor: "rgba(14,165,233,0.4)" }}>
-                  Plan Your Next Event →
+                <Link href="/studio" className="btn-nf-primary" style={{ borderRadius: 10, padding: "10px 22px" }}>
+                  Try in AI Studio →
                 </Link>
               </div>
 
@@ -635,7 +580,7 @@ export default function LandingPage() {
             <div style={{ position: "absolute", top: 0, right: 0, width: 300, height: 300, background: "radial-gradient(circle, rgba(var(--purple-rgb),0.15) 0%, transparent 70%)", pointerEvents: "none" }} />
             <div className="tf-d2c-grid">
               <div>
-                <span className="tf-badge-pill" style={{ background: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.15)", color: "var(--text)" }}>
+                <span className="tf-badge-pill">
                   For Fashion Brands &amp; D2C Merchants
                 </span>
                 <h3 style={{ fontSize: "clamp(26px, 3.5vw, 38px)", fontWeight: 800, color: "var(--text)", lineHeight: 1.2, margin: "14px 0" }}>
@@ -670,64 +615,25 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Code Snippet Window */}
-              <div className="tf-code-window">
-                <div className="tf-code-header">
-                  <div style={{ display: "flex", gap: 6 }}>
-                    <button
-                      type="button"
-                      onClick={() => setActiveCodeSnippet("html")}
-                      style={{
-                        background: activeCodeSnippet === "html" ? "rgba(var(--purple-rgb),0.2)" : "transparent",
-                        border: "none",
-                        color: activeCodeSnippet === "html" ? "var(--purple)" : "var(--muted)",
-                        padding: "3px 10px",
-                        borderRadius: 4,
-                        fontSize: 11,
-                        cursor: "pointer",
-                        fontWeight: 700,
-                      }}
-                    >
-                      HTML Embed
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setActiveCodeSnippet("shopify")}
-                      style={{
-                        background: activeCodeSnippet === "shopify" ? "rgba(var(--purple-rgb),0.2)" : "transparent",
-                        border: "none",
-                        color: activeCodeSnippet === "shopify" ? "var(--purple)" : "var(--muted)",
-                        padding: "3px 10px",
-                        borderRadius: 4,
-                        fontSize: 11,
-                        cursor: "pointer",
-                        fontWeight: 700,
-                      }}
-                    >
-                      Shopify Liquid
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setActiveCodeSnippet("react")}
-                      style={{
-                        background: activeCodeSnippet === "react" ? "rgba(var(--purple-rgb),0.2)" : "transparent",
-                        border: "none",
-                        color: activeCodeSnippet === "react" ? "var(--purple)" : "var(--muted)",
-                        padding: "3px 10px",
-                        borderRadius: 4,
-                        fontSize: 11,
-                        cursor: "pointer",
-                        fontWeight: 700,
-                      }}
-                    >
-                      React SDK
-                    </button>
-                  </div>
-                  <span>SDK v2.4</span>
+              {/* Integration Card */}
+              <div className="tf-code-window" style={{ padding: 24 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 16 }}>
+                  Works with your stack
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {["Shopify", "WooCommerce", "Custom / Headless Storefront"].map((platform) => (
+                    <div key={platform} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: "var(--bg-soft)", border: "1px solid var(--card-border)", borderRadius: "var(--r-md)" }}>
+                      <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--purple)", flexShrink: 0 }} />
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>{platform}</span>
+                    </div>
+                  ))}
                 </div>
-                <pre className="tf-code-body">
-                  <code>{CODE_SNIPPETS[activeCodeSnippet]}</code>
-                </pre>
+                <p style={{ fontSize: 12, color: "var(--text-soft)", marginTop: 16, lineHeight: 1.6 }}>
+                  Our team handles setup — no engineering lift required on your end. Talk to us to get a widget key.
+                </p>
+                <Link href="/pricing" className="btn-nf-ghost" style={{ marginTop: 14, borderRadius: 10, padding: "10px 20px", display: "inline-flex" }}>
+                  Talk to Our Brand Team
+                </Link>
               </div>
             </div>
           </section>
@@ -960,7 +866,7 @@ export default function LandingPage() {
               <div className="nf-footer-top">
                 <div className="nf-footer-brand">
                   <div className="nf-footer-logo">
-                    <div style={{ width: 32, height: 32, borderRadius: 8, overflow: "hidden", background: "#0c111d", border: "1px solid rgba(255,255,255,0.1)", flexShrink: 0 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 8, overflow: "hidden", background: "var(--card)", border: "1px solid var(--card-border)", flexShrink: 0 }}>
                       <img src="/images/logo.png" alt="Threadflank Logo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     </div>
                     <span className="nf-footer-brand-name" style={{ background: "linear-gradient(135deg, #00c98d 0%, #0ea5e9 50%, #8b5cf6 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
@@ -978,7 +884,6 @@ export default function LandingPage() {
                     <div className="nf-footer-col-title">Studio</div>
                     <Link href="/studio" className="nf-footer-link">AI Drape Studio</Link>
                     <Link href="/setup" className="nf-footer-link">Digital Twin Setup</Link>
-                    <Link href="/outfits" className="nf-footer-link">Occasion Planner</Link>
                     <Link href="/closet" className="nf-footer-link">Digital Closet</Link>
                     <Link href="/discover" className="nf-footer-link">Discover Drops</Link>
                   </div>

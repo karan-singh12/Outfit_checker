@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "next/navigation";
 import { uploadAvatar } from "../../services/api";
-import { SOUTH_ASIAN_SKIN_PROFILES } from "../../components/SkinToneSelector";
+import SkinToneSelector, { SkinProfile, SOUTH_ASIAN_SKIN_PROFILES } from "../../components/SkinToneSelector";
 import WhatsAppModal from "../../components/WhatsAppModal";
 
 export default function ProfilePage() {
@@ -22,6 +22,22 @@ export default function ProfilePage() {
   const [savedTwin, setSavedTwin] = useState<any>(null);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
 
+  // Digital Twin editor state
+  const [showTwinEditor, setShowTwinEditor] = useState(false);
+  const [modelGender, setModelGender] = useState<"female" | "male">("female");
+  const [modelAge, setModelAge] = useState("25");
+  const [modelEthnicity, setModelEthnicity] = useState("South Asian");
+  const [modelStyle, setModelStyle] = useState("casual clothing");
+  const [modelBackground, setModelBackground] = useState("modern studio background");
+  const [customModelPrompt, setCustomModelPrompt] = useState("");
+  const [selectedSkinTone, setSelectedSkinTone] = useState<SkinProfile>(SOUTH_ASIAN_SKIN_PROFILES[1]);
+  const [twinHeight, setTwinHeight] = useState("170");
+  const [twinWeight, setTwinWeight] = useState("65");
+  const [isGeneratingModel, setIsGeneratingModel] = useState(false);
+  const [twinError, setTwinError] = useState<string | null>(null);
+  const [twinSelfieFile, setTwinSelfieFile] = useState<File | null>(null);
+  const [twinSelfiePreview, setTwinSelfiePreview] = useState<string | null>(null);
+
   // Sync user details when they load
   useEffect(() => {
     if (user) {
@@ -35,11 +51,92 @@ export default function ProfilePage() {
       const twinData = localStorage.getItem("tf_body_twin");
       if (twinData) {
         try {
-          setSavedTwin(JSON.parse(twinData));
+          const twin = JSON.parse(twinData);
+          setSavedTwin(twin);
+          if (twin.gender) setModelGender(twin.gender);
+          if (twin.age) setModelAge(String(twin.age));
+          if (twin.ethnicity) setModelEthnicity(twin.ethnicity);
+          if (twin.heightCm) setTwinHeight(String(twin.heightCm));
+          if (twin.weightKg) setTwinWeight(String(twin.weightKg));
+          if (twin.skinToneId) {
+            const matched = SOUTH_ASIAN_SKIN_PROFILES.find((p) => p.id === twin.skinToneId);
+            if (matched) setSelectedSkinTone(matched);
+          }
         } catch {}
       }
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!twinSelfieFile) { setTwinSelfiePreview(null); return; }
+    const url = URL.createObjectURL(twinSelfieFile);
+    setTwinSelfiePreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [twinSelfieFile]);
+
+  const handleGenerateModel = async () => {
+    setTwinError(null);
+    setIsGeneratingModel(true);
+    try {
+      const res = await fetch("/api/generate-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          gender: modelGender,
+          age: modelAge,
+          style: modelStyle,
+          background: modelBackground,
+          ethnicity: modelEthnicity,
+          customPrompt: customModelPrompt,
+          skinPrompt: selectedSkinTone.diffusionPrompt,
+        }),
+      });
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || `Server error ${res.status}`);
+      }
+      const data = await res.json();
+      const newTwin = {
+        gender: modelGender,
+        age: modelAge,
+        ethnicity: modelEthnicity,
+        skinToneId: selectedSkinTone.id,
+        avatarUrl: data.resultImageUrl,
+        heightCm: Number(twinHeight) || 170,
+        weightKg: Number(twinWeight) || 65,
+      };
+      localStorage.setItem("tf_body_twin", JSON.stringify(newTwin));
+      sessionStorage.setItem("setup_selfie_data", data.resultImageUrl);
+      setSavedTwin(newTwin);
+      setTwinSelfieFile(null);
+      setSuccessMessage("Digital twin updated! It's now live across the Studio.");
+      setTimeout(() => setSuccessMessage(null), 4000);
+    } catch (e) {
+      setTwinError(e instanceof Error ? e.message : "Digital twin generation failed");
+    } finally {
+      setIsGeneratingModel(false);
+    }
+  };
+
+  const handleTwinSelfieUpload = (file: File) => {
+    setTwinSelfieFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const dataUrl = reader.result as string;
+      sessionStorage.setItem("setup_selfie_data", dataUrl);
+      const newTwin = {
+        ...(savedTwin || {}),
+        gender: modelGender,
+        age: modelAge,
+        avatarUrl: dataUrl,
+        heightCm: Number(twinHeight) || 170,
+        weightKg: Number(twinWeight) || 65,
+      };
+      localStorage.setItem("tf_body_twin", JSON.stringify(newTwin));
+      setSavedTwin(newTwin);
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Protect route
   useEffect(() => {
@@ -436,9 +533,165 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <Link href="/studio" className="btn btn-gradient btn-sm" style={{ textAlign: "center", justifyContent: "center", marginTop: "auto" }}>
-              Customize Twin in Studio →
-            </Link>
+            <div style={{ display: "flex", gap: 8, marginTop: "auto" }}>
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                style={{ flex: 1, justifyContent: "center" }}
+                onClick={() => setShowTwinEditor((v) => !v)}
+              >
+                {showTwinEditor ? "Close Editor" : "Edit Digital Twin"}
+              </button>
+              <Link href="/studio" className="btn btn-gradient btn-sm" style={{ flex: 1, textAlign: "center", justifyContent: "center" }}>
+                Open Studio →
+              </Link>
+            </div>
+
+            {showTwinEditor && (
+              <div style={{ marginTop: 4, paddingTop: 18, borderTop: "1px solid var(--card-border)", display: "flex", flexDirection: "column", gap: 12 }}>
+                {twinError && (
+                  <div style={{ padding: "10px 14px", background: "var(--danger-bg)", border: "1px solid var(--danger)", borderRadius: "var(--r-xs)", color: "var(--danger)", fontSize: 12 }}>
+                    {twinError}
+                  </div>
+                )}
+
+                <div>
+                  <label className="metric-label" style={{ display: "block", marginBottom: 6 }}>Gender</label>
+                  <div className="gender-row">
+                    {(["Female", "Male"] as const).map((g) => (
+                      <button
+                        key={g}
+                        type="button"
+                        className={`gender-btn${modelGender === g.toLowerCase() ? " active" : ""}`}
+                        onClick={() => setModelGender(g.toLowerCase() as any)}
+                      >{g}</button>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", gap: 10 }}>
+                  <div style={{ flex: 1 }}>
+                    <label className="metric-label" style={{ display: "block", marginBottom: 6 }}>Age</label>
+                    <input
+                      type="number"
+                      min={15}
+                      max={70}
+                      value={modelAge}
+                      onChange={(e) => setModelAge(e.target.value)}
+                      className="metric-input"
+                      style={{ width: "100%", background: "var(--bg-soft)", border: "1px solid var(--card-border)", borderRadius: "var(--r-xs)", color: "var(--text)", padding: "6px 10px", fontSize: 12 }}
+                    />
+                  </div>
+                  <div style={{ flex: 2 }}>
+                    <label className="metric-label" style={{ display: "block", marginBottom: 6 }}>Look/Ethnicity</label>
+                    <select value={modelEthnicity} onChange={(e) => setModelEthnicity(e.target.value)} className="themed-select">
+                      <option value="South Asian">South Asian</option>
+                      <option value="East Asian">East Asian</option>
+                      <option value="Caucasian">Caucasian</option>
+                      <option value="Latino">Latino</option>
+                      <option value="African">African</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", gap: 10 }}>
+                  <div style={{ flex: 1 }}>
+                    <label className="metric-label" style={{ display: "block", marginBottom: 6 }}>Height (cm)</label>
+                    <input
+                      type="number"
+                      value={twinHeight}
+                      onChange={(e) => setTwinHeight(e.target.value)}
+                      className="metric-input"
+                      style={{ width: "100%", background: "var(--bg-soft)", border: "1px solid var(--card-border)", borderRadius: "var(--r-xs)", color: "var(--text)", padding: "6px 10px", fontSize: 12 }}
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label className="metric-label" style={{ display: "block", marginBottom: 6 }}>Weight (kg)</label>
+                    <input
+                      type="number"
+                      value={twinWeight}
+                      onChange={(e) => setTwinWeight(e.target.value)}
+                      className="metric-input"
+                      style={{ width: "100%", background: "var(--bg-soft)", border: "1px solid var(--card-border)", borderRadius: "var(--r-xs)", color: "var(--text)", padding: "6px 10px", fontSize: 12 }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="metric-label" style={{ display: "block", marginBottom: 6 }}>Clothing Style</label>
+                  <select value={modelStyle} onChange={(e) => setModelStyle(e.target.value)} className="themed-select">
+                    <option value="casual clothing">Casual (T-Shirt & Jeans)</option>
+                    <option value="formal business blazer suit">Professional (Blazer & Suit)</option>
+                    <option value="stylish athletic activewear">Sporty (Activewear)</option>
+                    <option value="elegant cocktail dress">Elegant (Evening Dress)</option>
+                    <option value="oversized streetwear hoodie cargo pants">Streetwear (Hoodie & Cargos)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="metric-label" style={{ display: "block", marginBottom: 6 }}>Background Scene</label>
+                  <select value={modelBackground} onChange={(e) => setModelBackground(e.target.value)} className="themed-select">
+                    <option value="modern clean photo studio background">Modern Studio</option>
+                    <option value="solid warm grey backdrop background">Solid Color Backplate</option>
+                    <option value="minimalist cozy loft interior background">Minimalist Loft</option>
+                    <option value="sunlit blurry city street background">City Street</option>
+                    <option value="lush blurred background garden backdrop">Lush Outdoor Garden</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="metric-label" style={{ display: "block", marginBottom: 6 }}>Custom Prompt (Optional)</label>
+                  <textarea
+                    placeholder="Enter custom image generation instructions..."
+                    value={customModelPrompt}
+                    onChange={(e) => setCustomModelPrompt(e.target.value)}
+                    style={{ width: "100%", height: 50, background: "var(--bg-soft)", border: "1px solid var(--card-border)", borderRadius: "var(--r-xs)", color: "var(--text)", padding: "6px 10px", fontSize: 11, outline: "none", resize: "none" }}
+                  />
+                </div>
+
+                <SkinToneSelector
+                  selectedId={selectedSkinTone.id}
+                  onSelect={(profile) => {
+                    setSelectedSkinTone(profile);
+                    const twin = JSON.parse(localStorage.getItem("tf_body_twin") || "{}");
+                    const updated = { ...twin, skinToneId: profile.id };
+                    localStorage.setItem("tf_body_twin", JSON.stringify(updated));
+                    setSavedTwin(updated);
+                  }}
+                />
+
+                <button
+                  type="button"
+                  className="btn btn-gradient btn-sm"
+                  style={{ width: "100%", padding: "10px" }}
+                  onClick={handleGenerateModel}
+                  disabled={isGeneratingModel}
+                >
+                  {isGeneratingModel ? <><span className="spinner spinner-sm" /> Generating Twin…</> : "Generate AI Twin"}
+                </button>
+
+                <div style={{ borderTop: "1px solid var(--card-border)", paddingTop: 14 }}>
+                  <label className="studio-upload-btn" style={{ width: "100%" }}>
+                    <input type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) handleTwinSelfieUpload(f);
+                    }} />
+                    {twinSelfiePreview ? (
+                      <img src={twinSelfiePreview} alt="you" style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover", border: "2px solid var(--purple)", flexShrink: 0 }} />
+                    ) : (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, color: "var(--purple)" }}>
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                      </svg>
+                    )}
+                    <span style={{ color: "var(--purple)", fontWeight: 600, fontSize: 11 }}>
+                      Or upload a real photo instead
+                    </span>
+                  </label>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Card 4: WhatsApp Try-On Bot */}

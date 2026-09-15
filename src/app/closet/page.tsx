@@ -304,8 +304,8 @@ export default function ClosetPage() {
           </Link>
         )}
         {activeTab === "occasions" && (
-          <Link href="/outfits" className="btn btn-gradient btn-sm">
-            Plan Occasion
+          <Link href="/studio" className="btn btn-gradient btn-sm">
+            Try in Studio
           </Link>
         )}
       </div>
@@ -513,8 +513,8 @@ export default function ClosetPage() {
               Tell us about your event and we'll pick the best outfit combinations from your closet.
             </p>
           </div>
-          <Link href="/outfits" className="btn btn-gradient" style={{ padding: "12px 28px" }}>
-            Plan an Occasion
+          <Link href="/studio" className="btn btn-gradient" style={{ padding: "12px 28px" }}>
+            Open Drape Studio
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </Link>
         </div>

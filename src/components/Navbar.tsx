@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import WhatsAppModal from "./WhatsAppModal";
 
@@ -40,6 +40,19 @@ export default function Navbar() {
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const { user, logout } = useAuth();
+  const [avatarOpen, setAvatarOpen] = useState(false);
+  const avatarRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (avatarRef.current && !avatarRef.current.contains(e.target as Node)) {
+        setAvatarOpen(false);
+      }
+    };
+    if (avatarOpen) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [avatarOpen]);
 
   useEffect(() => {
     setMounted(true);
@@ -108,13 +121,7 @@ export default function Navbar() {
               </svg>
               Drape
             </Link>
-            <Link href="/outfits" className={p?.startsWith("/outfits") ? "active" : ""}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-                <path d="M9 16l2 2 4-4"/>
-              </svg>
-              Outfits
-            </Link>
+
             <Link href="/closet" className={p?.startsWith("/closet") || p?.startsWith("/wardrobe") || p?.startsWith("/looks") ? "active" : ""}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.84H5v10a2 2 0 002 2h10a2 2 0 002-2V10h1.15a1 1 0 00.99-.84l.58-3.57a2 2 0 00-1.34-2.23z"/>
@@ -137,21 +144,23 @@ export default function Navbar() {
               onClick={() => setShowWhatsAppModal(true)}
               className="glass-pill"
               style={{
-                background: "rgba(37, 211, 102, 0.12)",
-                borderColor: "rgba(37, 211, 102, 0.35)",
-                color: "#25D366",
+                background: "rgba(37, 211, 102, 0.08)",
+                borderColor: "rgba(37, 211, 102, 0.25)",
+                color: "rgba(37, 211, 102, 0.8)",
                 cursor: "pointer",
                 display: "inline-flex",
                 alignItems: "center",
-                gap: 6,
-                padding: "5px 12px",
+                gap: 5,
+                padding: "4px 10px",
+                fontSize: 11,
+                opacity: 0.85,
               }}
               title="Try on outfits via WhatsApp"
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.311.045-.698.072-2.371-.62-1.415-.588-2.316-2.029-2.387-2.123-.07-.093-.578-.77-.578-1.467 0-.698.365-1.041.496-1.185.13-.144.286-.18.382-.18.096 0 .192.001.275.006.09.004.21-.034.329.251.125.298.428 1.042.466 1.119.038.077.064.168.013.272-.051.103-.076.168-.152.257-.076.09-.16.201-.229.27-.076.077-.156.161-.067.315.089.153.396.654.85 1.059.584.521 1.077.683 1.23.76.153.077.244.064.334-.038.09-.103.382-.446.484-.599.103-.153.205-.128.345-.077.14.051.888.419 1.041.496.153.076.255.115.293.18.038.064.038.371-.106.776zM12 2C6.477 2 2 6.477 2 12c0 1.891.524 3.662 1.435 5.176L2 22l4.981-1.396A9.957 9.957 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z" />
               </svg>
-              <span>WhatsApp Bot</span>
+              <span>WhatsApp</span>
             </button>
 
             {/* Theme Switcher Button */}
@@ -186,25 +195,52 @@ export default function Navbar() {
             {/* Desktop Auth Display */}
             <div className="navbar-desktop-auth">
               {user ? (
-                <Link
-                  href="/profile"
-                  className="navbar-mobile-profile-btn"
-                  aria-label="View Profile"
-                  title="Profile"
-                  style={{ width: 34, height: 34 }}
-                >
-                  {user.avatar ? (
-                    <img
-                      src={user.avatar.startsWith("/public") ? `http://127.0.0.1:3003${user.avatar}` : user.avatar}
-                      alt="Avatar"
-                      style={{ width: 26, height: 26, borderRadius: "50%", objectFit: "cover" }}
-                    />
-                  ) : (
-                    <span className="navbar-mobile-avatar-circle" style={{ width: 26, height: 26, fontSize: 12 }}>
-                      {(user.username || user.email || "U")[0].toUpperCase()}
-                    </span>
+                <div ref={avatarRef} style={{ position: "relative" }}>
+                  <button
+                    type="button"
+                    onClick={() => setAvatarOpen(v => !v)}
+                    className="navbar-mobile-profile-btn"
+                    aria-label="Account menu"
+                    title="Account"
+                    style={{ width: 36, height: 36 }}
+                  >
+                    {user.avatar ? (
+                      <img
+                        src={user.avatar.startsWith("/public") ? `http://127.0.0.1:3003${user.avatar}` : user.avatar}
+                        alt="Avatar"
+                        style={{ width: 26, height: 26, borderRadius: "50%", objectFit: "cover" }}
+                      />
+                    ) : (
+                      <span className="navbar-mobile-avatar-circle" style={{ width: 26, height: 26, fontSize: 12 }}>
+                        {(user.username || user.email || "U")[0].toUpperCase()}
+                      </span>
+                    )}
+                  </button>
+
+                  {avatarOpen && (
+                    <div className="avatar-dropdown">
+                      <div className="avatar-dropdown-user">
+                        <span className="avatar-dropdown-name">{user.username || user.email?.split("@")[0] || "Profile"}</span>
+                      </div>
+                      <Link href="/profile" className="avatar-dropdown-item" onClick={() => setAvatarOpen(false)}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M18 21a6 6 0 0 0-12 0"/></svg>
+                        Profile
+                      </Link>
+                      <Link href="/setup" className="avatar-dropdown-item" onClick={() => setAvatarOpen(false)}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                        Settings
+                      </Link>
+                      <button
+                        type="button"
+                        className="avatar-dropdown-item avatar-dropdown-item-danger"
+                        onClick={() => { logout(); setAvatarOpen(false); }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        Log out
+                      </button>
+                    </div>
                   )}
-                </Link>
+                </div>
               ) : (
                 <>
                   <Link href="/pricing" className="navbar-login-btn">
@@ -281,18 +317,7 @@ export default function Navbar() {
           <span className="mobile-nav-label">Drape</span>
         </Link>
 
-        <Link
-          href="/outfits"
-          className={`mobile-nav-item ${p?.startsWith("/outfits") ? "active" : ""}`}
-        >
-          <div className="mobile-nav-icon-wrap">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-              <path d="M9 16l2 2 4-4"/>
-            </svg>
-          </div>
-          <span className="mobile-nav-label">Outfits</span>
-        </Link>
+
 
         <Link
           href="/closet"
