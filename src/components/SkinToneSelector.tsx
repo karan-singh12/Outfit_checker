@@ -175,9 +175,9 @@ export default function SkinToneSelector({
                 fontWeight: 700,
                 padding: "2px 8px",
                 borderRadius: 99,
-                background: "linear-gradient(135deg, rgba(0, 201, 141, 0.2), rgba(14, 165, 233, 0.2))",
-                border: "1px solid rgba(0, 201, 141, 0.35)",
-                color: "#00c98d",
+                background: "rgba(var(--purple-rgb), 0.18)",
+                border: "1px solid rgba(var(--purple-rgb), 0.35)",
+                color: "var(--purple)",
                 textTransform: "uppercase",
                 letterSpacing: "0.05em",
               }}
@@ -282,7 +282,7 @@ export default function SkinToneSelector({
           </div>
           <span
             className="glass-pill"
-            style={{ fontSize: 10.5, color: "#00c98d", borderColor: "rgba(0, 201, 141, 0.3)" }}
+            style={{ fontSize: 10.5, color: "var(--purple)", borderColor: "rgba(var(--purple-rgb), 0.3)" }}
           >
             ✓ Anti-Whitewash Active
           </span>
@@ -297,7 +297,7 @@ export default function SkinToneSelector({
           {/* Flattering Colors */}
           <div>
             <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text)", display: "flex", alignItems: "center", gap: 4, marginBottom: 6 }}>
-              <span style={{ color: "#00c98d" }}>●</span> Recommended Garment Colors:
+              <span style={{ color: "var(--purple)" }}>●</span> Recommended Garment Colors:
             </span>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {activeProfile.bestColors.map((c) => (

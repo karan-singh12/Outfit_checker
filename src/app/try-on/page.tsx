@@ -5,7 +5,8 @@ import type { AvatarType } from "../../components/AvatarSelector";
 import type { AvatarBodyProfile } from "../../components/AvatarSelector";
 import CharacterModel from "../../components/CharacterModel";
 import TacticalCharacter from "../../components/TacticalCharacter";
-import { generateOutfitTryOn, fetchGarmentFromUrl, tryOnFromUrl } from "../../services/api";
+import { generateOutfitTryOn, fetchGarmentFromUrl, tryOnFromUrl, saveLook } from "../../services/api";
+import { useAuth } from "../../context/AuthContext";
 
 type GarmentCategory = "upper_body" | "lower_body" | "dresses";
 type Mode = "upload" | "link";
@@ -84,6 +85,8 @@ const UploadIcon = () => (
    MAIN PAGE
 ════════════════════════════════════════════════════════════════════════════ */
 export default function TryOnPage() {
+  const { token } = useAuth();
+
   // ── Mode toggle ────────────────────────────────────────────────────────────
   const [mode, setMode] = useState<Mode>("upload");
 
@@ -95,6 +98,7 @@ export default function TryOnPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [use3D, setUse3D] = useState(true);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">("idle");
 
   // ── Upload-mode state ──────────────────────────────────────────────────────
   const [gender, setGender] = useState<AvatarType>("female");
@@ -165,6 +169,7 @@ export default function TryOnPage() {
     setErrorMessage(null);
     setIsLoading(true);
     setResultImage(null);
+    setSaveState("idle");
 
     try {
       let response;
@@ -191,6 +196,23 @@ export default function TryOnPage() {
     if (!resultImage) return;
     if (navigator.share) { await navigator.share({ title: "My AI Fit Studio Look", url: resultImage }); }
     else { await navigator.clipboard.writeText(resultImage).catch(() => {}); alert("Result URL copied!"); }
+  };
+  const handleSaveToProfile = async () => {
+    if (!resultImage || saveState !== "idle") return;
+    if (!token) { setErrorMessage("Log in to save looks to your profile."); return; }
+    setSaveState("saving");
+    try {
+      await saveLook(token, {
+        name: `Try-On — ${categoryLabels[garmentCategory]}`,
+        occasion: "casual",
+        image: resultImage,
+        pieces: [categoryLabels[garmentCategory]],
+      });
+      setSaveState("saved");
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "Failed to save look.");
+      setSaveState("idle");
+    }
   };
 
   const modelUrl = gender === "female" ? "/models/michelle.glb" : "/models/soldier.glb";
@@ -517,15 +539,21 @@ export default function TryOnPage() {
 
             {resultImage && (
               <button type="button" className="action-btn"
-                onClick={() => { setResultImage(null); }}
+                onClick={() => { setResultImage(null); setSaveState("idle"); }}
                 title="Try again"
               >
                 Try Again
               </button>
             )}
 
-            <button type="button" className="action-btn action-btn-primary" disabled={!resultImage} title="Save to profile">
-              Save to Profile
+            <button
+              type="button"
+              className="action-btn action-btn-primary"
+              onClick={handleSaveToProfile}
+              disabled={!resultImage || saveState !== "idle"}
+              title="Save to profile"
+            >
+              {saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved ✓" : "Save to Profile"}
             </button>
           </div>
         </div>

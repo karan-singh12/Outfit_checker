@@ -153,12 +153,12 @@ export default function WhatsAppModal({
                 width: 36,
                 height: 36,
                 borderRadius: 10,
-                background: "#25D366",
+                background: "var(--purple)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 color: "#fff",
-                boxShadow: "0 2px 10px rgba(37, 211, 102, 0.4)",
+                boxShadow: "0 2px 10px rgba(var(--purple-rgb), 0.4)",
               }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -186,7 +186,7 @@ export default function WhatsAppModal({
                 border: "none",
                 fontSize: 11,
                 fontWeight: activeTab === "simulator" ? 700 : 500,
-                background: activeTab === "simulator" ? "#25D366" : "transparent",
+                background: activeTab === "simulator" ? "var(--purple)" : "transparent",
                 color: activeTab === "simulator" ? "#fff" : "var(--text-soft)",
                 cursor: "pointer",
                 transition: "all 0.15s ease",
@@ -203,7 +203,7 @@ export default function WhatsAppModal({
                 border: "none",
                 fontSize: 11,
                 fontWeight: activeTab === "connect" ? 700 : 500,
-                background: activeTab === "connect" ? "#25D366" : "transparent",
+                background: activeTab === "connect" ? "var(--purple)" : "transparent",
                 color: activeTab === "connect" ? "#fff" : "var(--text-soft)",
                 cursor: "pointer",
                 transition: "all 0.15s ease",
@@ -249,9 +249,9 @@ export default function WhatsAppModal({
                       style={{
                         padding: "5px 12px",
                         borderRadius: 99,
-                        background: "rgba(37, 211, 102, 0.1)",
-                        border: "1px solid rgba(37, 211, 102, 0.3)",
-                        color: "#25D366",
+                        background: "rgba(var(--purple-rgb), 0.1)",
+                        border: "1px solid rgba(var(--purple-rgb), 0.3)",
+                        color: "var(--purple)",
                         fontSize: 11,
                         fontWeight: 600,
                         cursor: "pointer",
@@ -281,7 +281,7 @@ export default function WhatsAppModal({
               >
                 {/* Chat header */}
                 <div style={{ padding: "8px 14px", background: "#202c33", display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ width: 30, height: 30, borderRadius: "50%", background: "#25D366", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 14 }}>
+                  <div style={{ width: 30, height: 30, borderRadius: "50%", background: "var(--purple)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 14 }}>
                     TF
                   </div>
                   <div>
@@ -349,7 +349,7 @@ export default function WhatsAppModal({
                     onClick={() => handleSendSimulatorMessage(inputUrl)}
                     disabled={!inputUrl.trim() || isBotProcessing}
                     style={{
-                      background: "#25D366",
+                      background: "var(--purple)",
                       border: "none",
                       borderRadius: 8,
                       padding: "0 14px",
@@ -389,7 +389,7 @@ export default function WhatsAppModal({
                 </div>
 
                 {savedSuccess && (
-                  <p style={{ color: "#00c98d", fontSize: 12, margin: 0, fontWeight: 600 }}>
+                  <p style={{ color: "var(--purple)", fontSize: 12, margin: 0, fontWeight: 600 }}>
                     ✓ WhatsApp number linked successfully! You can now send garment links directly.
                   </p>
                 )}
@@ -398,7 +398,7 @@ export default function WhatsAppModal({
                   type="submit"
                   disabled={isSaving || !phoneInput.trim()}
                   className="btn btn-gradient"
-                  style={{ background: "linear-gradient(135deg, #25D366, #128C7E)", borderColor: "#25D366" }}
+                  style={{ background: "var(--purple)", borderColor: "var(--purple)" }}
                 >
                   {isSaving ? "Saving..." : "Save & Activate WhatsApp Bot"}
                 </button>
@@ -430,7 +430,7 @@ export default function WhatsAppModal({
                   rel="noreferrer"
                   className="btn btn-sm"
                   style={{
-                    background: "#25D366",
+                    background: "var(--purple)",
                     color: "#fff",
                     textDecoration: "none",
                     fontWeight: 700,

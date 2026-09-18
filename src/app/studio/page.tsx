@@ -330,12 +330,12 @@ export default function StudioPage() {
     }
 
     const gradients = [
-      "linear-gradient(135deg,#f472b6,#7c3aed)",
-      "linear-gradient(135deg,#1e3a5f,#374151)",
-      "linear-gradient(135deg,#4a1942,#7c3aed)",
-      "linear-gradient(135deg,#881337,#db2777)",
-      "linear-gradient(135deg,#111827,#374151)",
-      "linear-gradient(135deg,#7c2d12,#92400e)"
+      "#3d2f5c",
+      "#27272a",
+      "#3d2f5c",
+      "#3d2f5c",
+      "#27272a",
+      "#27272a"
     ];
     const randomGradient = gradients[Math.floor(Math.random() * gradients.length)];
     const finalImage = resultImage || look.top?.image || look.dress?.image || "/images/look_brunch.png";
@@ -365,44 +365,45 @@ export default function StudioPage() {
 
   return (
     <>
-    <div className="studio-page">
+    <div className="tf2-page" style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 64px)", overflow: "hidden" }}>
 
-      {/* ══ LEFT — Item Picker ═══════════════════════════ */}
-      <div className="studio-left">
-        <div className="studio-left-header">
-          <p className="studio-left-title">Virtual Studio</p>
-
-          {/* Twin Bar — identity lives in Profile now, Studio is outfits only */}
-          <Link href="/profile" className="twin-bar">
-            <img
-              src={displayBaseImage}
-              alt="Your digital twin"
-              className="twin-bar-avatar"
-              onError={(e) => { (e.target as HTMLImageElement).src = modelGender === "male" ? "/images/male_avatar.png" : "/images/female_avatar.png"; }}
-            />
-            <span className="twin-bar-text">
-              <span className="twin-bar-label">Editing as</span>
-              <span className="twin-bar-name">{modelGender === "male" ? "Male" : "Female"} Twin · {modelAge}y</span>
-            </span>
-            <span className="twin-bar-edit">
-              Edit in Profile
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-            </span>
-          </Link>
-
-          {/* Category tabs — bubble style */}
-          <div className="cat-tabs cat-tabs-bubble">
-            {CAT_TABS.map((t) => (
-              <button key={t.id} type="button" className={`cat-tab-bubble${activeTab === t.id ? " active" : ""}`}
-                onClick={() => setActiveTab(t.id)}>
-                <span className="cat-tab-bubble-icon">
-                  <CategoryIcon id={t.id as Category} />
-                </span>
-                <span className="cat-tab-bubble-label">{t.label}</span>
-              </button>
-            ))}
-          </div>
+      {/* ══ TOP BAR ═══════════════════════════════════════════════════ */}
+      <div className="tf2-studio-top">
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <span className="tf2-serif" style={{ fontSize: 20, fontWeight: 600 }}>Threadflank</span>
+          <span style={{ width: 1, height: 16, background: "var(--tf-hairline)" }} />
+          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--tf-ink-soft)" }}>Studio</span>
         </div>
+
+        {/* Twin chip — identity lives in Profile now, Studio is outfits only */}
+        <Link href="/profile" className="tf2-twin-chip">
+          <img
+            src={displayBaseImage}
+            alt="Your digital twin"
+            onError={(e) => { (e.target as HTMLImageElement).src = modelGender === "male" ? "/images/male_avatar.png" : "/images/female_avatar.png"; }}
+          />
+          <span>{modelGender === "male" ? "Male" : "Female"} Twin · {modelAge}y — Edit in Profile</span>
+        </Link>
+      </div>
+
+      {/* ══ BODY ══════════════════════════════════════════════════════ */}
+      <div className="tf2-studio-shell">
+
+      {/* ── LEFT — Categories & Item Picker ────────────────────────── */}
+      <div className="tf2-studio-left tf2-glass">
+        {/* Category tabs — bubble style */}
+        <div className="tf2-bubble-row">
+          {CAT_TABS.map((t) => (
+            <button key={t.id} type="button" className={`tf2-bubble-item${activeTab === t.id ? " active" : ""}`}
+              onClick={() => setActiveTab(t.id)}>
+              <span className="tf2-bubble">
+                <CategoryIcon id={t.id as Category} />
+              </span>
+              <span className="tf2-bubble-label">{t.label}</span>
+            </button>
+          ))}
+        </div>
+        <div className="tf2-studio-hairline" />
 
         {activeTab === "makeup" ? (
           /* ── Makeup panel ─────────────────────────────────────────── */
@@ -447,16 +448,16 @@ export default function StudioPage() {
                   onChange={(e) => setOutfitUrl(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && fetchGarment()}
                   placeholder="Paste product URL…"
-                  style={{ flex:1, padding:"8px 10px", background:"var(--bg-soft)", border:"1px solid var(--card-border)", borderRadius:"var(--r-sm)", color:"var(--text)", fontSize:12, outline:"none" }}
+                  style={{ flex:1, padding:"10px 12px", background:"var(--tf-surface)", border:"1px solid var(--tf-hairline)", borderRadius:"10px", color:"var(--tf-ink)", fontSize:12, outline:"none" }}
                 />
-                <button type="button" className="btn btn-gradient btn-sm" onClick={fetchGarment} disabled={isFetching || !outfitUrl.trim()}>
+                <button type="button" className="tf2-btn tf2-btn-dark tf2-btn-sm" onClick={fetchGarment} disabled={isFetching || !outfitUrl.trim()}>
                   {isFetching ? <span className="spinner spinner-sm" /> : "Fetch"}
                 </button>
               </div>
-              {fetchError && <p style={{ fontSize:11, color:"var(--danger)" }}>{fetchError}</p>}
+              {fetchError && <p style={{ fontSize:11, color:"#c0392b" }}>{fetchError}</p>}
               {garmentImageUrl && (
                 <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 8 }}>
-                  <img src={garmentImageUrl} alt="Fetched" style={{ width:"100%", borderRadius:"var(--r-md)", border:"1px solid var(--card-border)" }} />
+                  <img src={garmentImageUrl} alt="Fetched" style={{ width:"100%", borderRadius:"14px", border:"1px solid var(--tf-hairline)" }} />
                   <RentBuyToggle buyPrice={4990} />
                 </div>
               )}
@@ -464,15 +465,15 @@ export default function StudioPage() {
           </div>
         ) : (
           /* ── Clothing / accessory items ─────────────────────────── */
-          <div className="studio-item-list">
+          <div className="tf2-garment-grid">
             {(WARDROBE[activeTab as Exclude<CatTab, "makeup">] ?? []).length === 0 ? (
               <div style={{ gridColumn:"1/-1", textAlign:"center", padding:"30px 10px" }}>
-                <div style={{ display: "inline-flex", padding: 12, borderRadius: "50%", background: "var(--bg-soft)", color: "var(--muted)", marginBottom: 10 }}>
+                <div style={{ display: "inline-flex", padding: 12, borderRadius: "50%", background: "var(--tf-ivory)", color: "var(--tf-ink-faint)", marginBottom: 10 }}>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
                   </svg>
                 </div>
-                <p style={{ fontSize:12, color:"var(--muted)" }}>No {activeTab} in wardrobe yet</p>
+                <p style={{ fontSize:12, color:"var(--tf-ink-faint)" }}>No {activeTab} in wardrobe yet</p>
               </div>
             ) : (
               (WARDROBE[activeTab as Exclude<CatTab, "makeup">] ?? []).map((item) => {
@@ -480,25 +481,18 @@ export default function StudioPage() {
                 return (
                   <div
                     key={item.id}
-                    className={`studio-item-card${isSelected ? " selected" : ""}`}
+                    className={`tf2-garment-card${isSelected ? " selected" : ""}`}
                     onClick={() => selectItem(item)}
                   >
-                    <div className="studio-item-image-wrapper" style={{ background: `${item.color}15` }}>
-                      <img 
-                        src={item.image} 
-                        alt={item.name} 
-                        onError={(e) => {
-                          (e.target as HTMLElement).style.display = 'none';
-                        }}
-                      />
-                      <span className="item-placeholder-icon">
-                        <CategoryIcon id={item.category as Category} />
-                      </span>
-                      {isSelected && <span className="studio-item-check">✓</span>}
-                    </div>
-                    <div className="studio-item-meta">
-                      <p className="studio-item-name" title={item.name}>{item.name}</p>
-                      <span className="studio-item-color-dot" style={{ background: item.color }} />
+                    <img
+                      className="tf2-garment-card-img"
+                      src={item.image}
+                      alt={item.name}
+                      onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                    />
+                    <div className="tf2-garment-card-name" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.name}</span>
+                      <span style={{ width: 8, height: 8, borderRadius: "50%", background: item.color, border: "1px solid var(--tf-hairline)", flexShrink: 0 }} />
                     </div>
                   </div>
                 );
@@ -508,61 +502,42 @@ export default function StudioPage() {
         )}
       </div>
 
-      {/* ══ CENTER — Avatar Stage (2D Canvas Redesign) ══════════════════ */}
-      <div className="studio-center">
-        <div className="studio-center-toolbar" style={{ top: 16 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-soft)", textTransform: "uppercase", padding: "4px 12px" }}>
-            {resultImage ? "Try-On Result" : selfieFile ? "Your Photo Twin" : "AI Base Model"}
+      {/* ══ CENTER — Avatar Stage ════════════════════════════════════ */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 16, minHeight: 0 }}>
+
+        <div className="tf2-studio-stage tf2-glass">
+          <span className="tf2-live-badge">
+            <span className="tf2-live-dot" />
+            Live twin
           </span>
-        </div>
+          <div className="tf2-stage-glow" />
 
-        {/* Loading overlay for AI try-on */}
-        {isGenerating && (
-          <div className="studio-loading" style={{ zIndex: 100 }}>
-            <div className="spinner spinner-lg" />
-            <p className="studio-loading-title">{PROGRESS_MSGS[progressPhase]}</p>
-            <p className="studio-loading-sub">Usually 30–90 seconds</p>
-          </div>
-        )}
-
-
-        {/* 2D Digital Twin Stage */}
-        <div className="studio-avatar-stage">
-          <span className="avatar-live-badge">
-            <span className="avatar-live-dot" />
-            Live Twin
-          </span>
-          <div className="avatar-ambient-glow avatar-ambient-glow-1" />
-          <div className="avatar-ambient-glow avatar-ambient-glow-2" />
+          {/* Loading overlay for AI try-on */}
+          {isGenerating && (
+            <div style={{ position: "absolute", inset: 0, zIndex: 100, background: "color-mix(in oklch, var(--tf-surface) 88%, transparent)", backdropFilter: "blur(6px)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }}>
+              <div className="spinner spinner-lg" />
+              <p style={{ fontSize: 15, fontWeight: 700, color: "var(--tf-ink)", margin: 0 }}>{PROGRESS_MSGS[progressPhase]}</p>
+              <p style={{ fontSize: 12, color: "var(--tf-ink-faint)", margin: 0 }}>Usually 30–90 seconds</p>
+            </div>
+          )}
 
           <div
             ref={stageRef}
-            className="avatar-container avatar-tilt-wrap"
+            className="avatar-tilt-wrap"
             onMouseMove={handleStageMouseMove}
             onMouseLeave={handleStageMouseLeave}
-            style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+            style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", position: "relative", zIndex: 1 }}
           >
             {resultImage ? (
-              <img key={resultImage} src={resultImage} alt="AI try-on result" className="avatar-result-img avatar-alive" />
+              <img key={resultImage} src={resultImage} alt="AI try-on result" className="tf2-stage-img" />
             ) : (
               <div style={{ position: "relative", width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <div className="avatar-twin-figure">
-                  <img
-                    key={displayBaseImage}
-                    src={displayBaseImage}
-                    alt="Base digital twin model"
-                    className="avatar-result-img avatar-alive"
-                    style={{
-                      maxHeight: "92%",
-                      maxWidth: "90%",
-                      borderRadius: "var(--r-md)",
-                      boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)",
-                      border: "1px solid var(--card-border)",
-                      objectFit: "contain"
-                    }}
-                  />
-                  <div className="avatar-reflection" style={{ backgroundImage: `url(${displayBaseImage})` }} />
-                </div>
+                <img
+                  key={displayBaseImage}
+                  src={displayBaseImage}
+                  alt="Base digital twin model"
+                  className="tf2-stage-img"
+                />
 
                 {/* Interactive Wardrobe Layering Labels */}
                 <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
@@ -604,59 +579,58 @@ export default function StudioPage() {
 
         {/* Error message */}
         {genError && (
-          <div style={{ padding:"10px 20px", background:"rgba(239,68,68,0.1)", borderTop:"1px solid rgba(239,68,68,0.2)", color:"var(--danger)", fontSize:12, display:"flex", gap:8, alignItems:"center", zIndex: 10 }}>
+          <div style={{ padding:"10px 16px", background:"#fdf0ee", border:"1px solid #f3c9c2", borderRadius: 12, color:"#b3341c", fontSize:12, display:"flex", gap:8, alignItems:"center" }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             {genError}
           </div>
         )}
 
         {/* Center panel actions */}
-        <div className="studio-center-bottom">
-          <button type="button" className="btn btn-gradient" style={{ flex:1 }} onClick={handleGenerate} disabled={isGenerating || (!selfieFile && !aiBaseImageUrl)}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <button type="button" className="tf2-btn tf2-btn-primary" style={{ flex:1 }} onClick={handleGenerate} disabled={isGenerating || (!selfieFile && !aiBaseImageUrl)}>
             {isGenerating
-              ? <><span className="spinner spinner-sm" style={{ borderColor:"rgba(255,255,255,0.25)", borderTopColor:"#fff" }} /> Generating AI Look…</>
-              : "Generate AI Look"}
+              ? <><span className="spinner spinner-sm" style={{ borderColor:"rgba(255,255,255,0.3)", borderTopColor:"#fff" }} /> Generating AI Look…</>
+              : "Generate this look"}
           </button>
 
           {resultImage && (
             <>
-              <button type="button" className="btn btn-ghost btn-sm" onClick={() => { const a = document.createElement("a"); a.href=resultImage; a.download="look.png"; a.click(); }}>Download</button>
-              <button type="button" className="btn btn-ghost btn-sm" onClick={() => setResultImage(null)}>Reset</button>
+              <button type="button" className="tf2-btn tf2-btn-ghost tf2-btn-sm" onClick={() => { const a = document.createElement("a"); a.href=resultImage; a.download="look.png"; a.click(); }}>Download</button>
+              <button type="button" className="tf2-btn tf2-btn-ghost tf2-btn-sm" onClick={() => setResultImage(null)}>Reset</button>
             </>
           )}
         </div>
       </div>
 
       {/* ══ RIGHT — Look Builder ════════════════════════════════════════ */}
-      <div className="studio-right">
-        <div className="studio-right-header">
-          <span className="studio-right-title">Current Look</span>
+      <div className="tf2-studio-right tf2-glass">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--tf-ink)" }}>Current Look</span>
           {hasLook && (
-            <button type="button" style={{ fontSize:11, color:"var(--danger)", background:"none", border:"none", cursor:"pointer", fontWeight:600 }}
+            <button type="button" style={{ fontSize:11, color:"var(--tf-accent)", background:"none", border:"none", cursor:"pointer", fontWeight:600 }}
               onClick={() => { setLook({ top:null,bottom:null,dress:null,outerwear:null,shoes:null,bag:null,jewellery:null,eyewear:null,lipstick:null,eyeshadow:null }); setSelectedItem({}); }}>
-              Clear All
+              Clear all
             </button>
           )}
         </div>
 
-        <div className="look-slots">
+        <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 10 }}>
           {LOOK_SLOTS.map((slot) => {
             const item = look[slot.key] as WardrobeItem | null;
             return (
-              <div key={slot.key} className={`look-slot${item ? " filled" : ""}`}>
-                <span className="look-slot-icon" style={{ display: "flex", alignItems: "center" }}>
-                  <CategoryIcon id={slot.cat as any} />
-                </span>
-                <span className="look-slot-label">{item ? item.name : slot.label}</span>
+              <div key={slot.key} className={`tf2-look-row${item ? "" : " empty"}`}>
                 {item ? (
                   <>
-                    <div className="look-slot-thumb" style={{ background:`${item.color}33`, padding: 0 }}>
-                      <img src={item.image} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "inherit" }} />
-                    </div>
-                    <button type="button" className="look-slot-remove" onClick={() => removeSlot(slot.key)}>×</button>
+                    <img className="tf2-look-thumb" src={item.image} alt={item.name} />
+                    <span className="tf2-look-name">{item.name}</span>
+                    <span className="tf2-look-cat">{slot.label}</span>
+                    <button type="button" className="tf2-look-remove" onClick={() => removeSlot(slot.key)}>×</button>
                   </>
                 ) : (
-                  <span style={{ fontSize:11, color:"var(--muted)", marginLeft:"auto" }}>—</span>
+                  <>
+                    <span className="tf2-look-thumb" />
+                    <span style={{ fontSize: 12.5, color: "var(--tf-ink-faint)", flex: 1 }}>Add {slot.label.toLowerCase()}</span>
+                  </>
                 )}
               </div>
             );
@@ -664,60 +638,55 @@ export default function StudioPage() {
 
           {/* Makeup slots */}
           {(look.lipstick || look.eyeshadow) && (
-            <div style={{ borderTop:"1px solid var(--card-border)", paddingTop:10, marginTop:4 }}>
-              <p style={{ fontSize:10, fontWeight:700, color:"var(--muted)", textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>Makeup</p>
+            <div style={{ borderTop:"1px solid var(--tf-hairline)", paddingTop:10, marginTop:4, display: "flex", flexDirection: "column", gap: 10 }}>
+              <p style={{ fontSize:10, fontWeight:700, color:"var(--tf-ink-faint)", textTransform:"uppercase", letterSpacing:"0.08em", margin: 0 }}>Makeup</p>
               {look.lipstick && (
-                <div className="look-slot filled">
-                  <span className="look-slot-icon" style={{ display: "flex", alignItems: "center" }}>
-                    <CategoryIcon id="makeup" />
-                  </span>
-                  <span className="look-slot-label">Lipstick</span>
-                  <div className="look-slot-thumb" style={{ background:look.lipstick, border:`2px solid ${look.lipstick}` }} />
-                  <button type="button" className="look-slot-remove" onClick={() => setLook((p) => ({ ...p, lipstick:null }))}>×</button>
+                <div className="tf2-look-row">
+                  <span className="tf2-look-thumb" style={{ background: look.lipstick }} />
+                  <span className="tf2-look-name">Lipstick</span>
+                  <button type="button" className="tf2-look-remove" onClick={() => setLook((p) => ({ ...p, lipstick:null }))}>×</button>
                 </div>
               )}
               {look.eyeshadow && (
-                <div className="look-slot filled">
-                  <span className="look-slot-icon" style={{ display: "flex", alignItems: "center" }}>
-                    <CategoryIcon id="makeup" />
-                  </span>
-                  <span className="look-slot-label">Eye Shadow</span>
-                  <div className="look-slot-thumb" style={{ background:look.eyeshadow }} />
-                  <button type="button" className="look-slot-remove" onClick={() => setLook((p) => ({ ...p, eyeshadow:null }))}>×</button>
+                <div className="tf2-look-row">
+                  <span className="tf2-look-thumb" style={{ background: look.eyeshadow }} />
+                  <span className="tf2-look-name">Eye shadow</span>
+                  <button type="button" className="tf2-look-remove" onClick={() => setLook((p) => ({ ...p, eyeshadow:null }))}>×</button>
                 </div>
               )}
             </div>
           )}
         </div>
 
-        <div className="studio-right-actions">
-          <button type="button" className="btn btn-gradient" style={{ width:"100%" }} disabled={!hasLook} onClick={() => { setSaveError(null); setShowSaveModal(true); }}>
-            Save This Look
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <button type="button" className="tf2-btn tf2-btn-dark" style={{ width:"100%" }} disabled={!hasLook} onClick={() => { setSaveError(null); setShowSaveModal(true); }}>
+            Save this look
           </button>
-          <button type="button" className="btn btn-ghost" style={{ width:"100%" }} disabled={!resultImage}>
+          <button type="button" className="tf2-btn tf2-btn-ghost" style={{ width:"100%" }} disabled={!resultImage}>
             Share
           </button>
         </div>
+      </div>
       </div>
     </div>
 
     {/* ══ Save Look Modal ════════════════════════════════════ */}
     {showSaveModal && (
-      <div className="post-detail-overlay" style={{ display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
-        <div className="setup-card" style={{ maxWidth: "420px", width: "100%", padding: "28px", display: "flex", flexDirection: "column", gap: "20px" }}>
+      <div className="tf2-page" style={{ position: "fixed", inset: 0, background: "oklch(23% 0.015 50 / 0.35)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
+        <div className="tf2-card" style={{ maxWidth: "420px", width: "100%", padding: "28px", display: "flex", flexDirection: "column", gap: "20px", background: "var(--tf-surface)" }}>
           <div>
-            <h3 style={{ fontSize: "20px", fontWeight: "700", color: "var(--text)", marginBottom: "6px" }}>Save Current Look</h3>
-            <p style={{ fontSize: "13px", color: "var(--text-soft)" }}>Give this outfit combo a name and select the occasion category.</p>
+            <h3 className="tf2-serif" style={{ fontSize: "24px", fontWeight: "600", color: "var(--tf-ink)", marginBottom: "6px" }}>Save current look</h3>
+            <p style={{ fontSize: "13px", color: "var(--tf-ink-soft)" }}>Give this outfit combo a name and select the occasion category.</p>
           </div>
 
           {saveError && (
-            <div style={{ padding: "10px 14px", background: "var(--danger-bg)", border: "1px solid var(--danger)", borderRadius: "var(--r-xs)", color: "var(--danger)", fontSize: "12px" }}>
+            <div style={{ padding: "10px 14px", background: "#fdf0ee", border: "1px solid #f3c9c2", borderRadius: "10px", color: "#b3341c", fontSize: "12px" }}>
               {saveError}
             </div>
           )}
 
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label style={{ fontSize: "11px", fontWeight: "600", color: "var(--text-soft)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Look Name</label>
+            <label style={{ fontSize: "11px", fontWeight: "600", color: "var(--tf-ink-faint)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Look Name</label>
             <input
               type="text"
               placeholder="e.g. Summer Brunch, Friday Party"
@@ -726,27 +695,27 @@ export default function StudioPage() {
               style={{
                 width: "100%",
                 padding: "10px 14px",
-                background: "var(--bg-elevated)",
-                border: "1px solid var(--card-border)",
-                borderRadius: "var(--r-xs)",
-                color: "var(--text)",
+                background: "var(--tf-ivory)",
+                border: "1px solid var(--tf-hairline)",
+                borderRadius: "10px",
+                color: "var(--tf-ink)",
                 outline: "none",
               }}
             />
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label style={{ fontSize: "11px", fontWeight: "600", color: "var(--text-soft)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Occasion</label>
+            <label style={{ fontSize: "11px", fontWeight: "600", color: "var(--tf-ink-faint)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Occasion</label>
             <select
               value={saveOccasion}
               onChange={(e) => setSaveOccasion(e.target.value as any)}
               style={{
                 width: "100%",
                 padding: "10px 14px",
-                background: "var(--bg-elevated)",
-                border: "1px solid var(--card-border)",
-                borderRadius: "var(--r-xs)",
-                color: "var(--text)",
+                background: "var(--tf-ivory)",
+                border: "1px solid var(--tf-hairline)",
+                borderRadius: "10px",
+                color: "var(--tf-ink)",
                 outline: "none",
               }}
             >
@@ -761,8 +730,8 @@ export default function StudioPage() {
           <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
             <button
               type="button"
-              className="btn btn-ghost"
-              style={{ flex: 1, padding: "10px" }}
+              className="tf2-btn tf2-btn-ghost"
+              style={{ flex: 1 }}
               onClick={() => { setShowSaveModal(false); setSaveName(""); setSaveError(null); }}
               disabled={isSaving}
             >
@@ -770,8 +739,8 @@ export default function StudioPage() {
             </button>
             <button
               type="button"
-              className="btn btn-gradient"
-              style={{ flex: 1, padding: "10px" }}
+              className="tf2-btn tf2-btn-primary"
+              style={{ flex: 1 }}
               onClick={handleSaveLook}
               disabled={isSaving || !saveName.trim()}
             >

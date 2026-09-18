@@ -2,14 +2,18 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { saveLook } from "../../../services/api";
+import { useAuth } from "../../../context/AuthContext";
 
 type StoredBody = { age: number; heightCm: number; weightKg: number };
 
 export default function TryOnResultPage() {
+  const { token } = useAuth();
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [avatarType, setAvatarType] = useState<string>("operator");
   const [bodyProfile, setBodyProfile] = useState<StoredBody | null>(null);
   const [beforeAfter, setBeforeAfter] = useState(false);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
   useEffect(() => {
     const image = sessionStorage.getItem("tryOnResultImage");
@@ -49,6 +53,23 @@ export default function TryOnResultPage() {
     } else {
       await navigator.clipboard.writeText(resultImage).catch(() => {});
       alert("Result URL copied to clipboard!");
+    }
+  };
+
+  const handleSaveToProfile = async () => {
+    if (!resultImage || saveState === "saving" || saveState === "saved") return;
+    if (!token) { alert("Log in to save looks to your profile."); return; }
+    setSaveState("saving");
+    try {
+      await saveLook(token, {
+        name: `${avatarType.charAt(0).toUpperCase() + avatarType.slice(1)} Try-On`,
+        occasion: "casual",
+        image: resultImage,
+        pieces: ["outfit"],
+      });
+      setSaveState("saved");
+    } catch {
+      setSaveState("error");
     }
   };
 
@@ -154,8 +175,13 @@ export default function TryOnResultPage() {
             Download Image
           </button>
 
-          <button type="button" className="action-btn action-btn-primary" disabled={!resultImage}>
-            Save to Profile
+          <button
+            type="button"
+            className="action-btn action-btn-primary"
+            onClick={handleSaveToProfile}
+            disabled={!resultImage || saveState === "saving" || saveState === "saved"}
+          >
+            {saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved ✓" : saveState === "error" ? "Retry Save" : "Save to Profile"}
           </button>
         </div>
       </div>

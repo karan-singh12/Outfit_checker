@@ -216,10 +216,6 @@ export default function MessagesPage() {
 
     setSocket(newSocket);
 
-    newSocket.on("connect", () => {
-      console.log("WebSocket connected to chat service");
-    });
-
     newSocket.on("receiveMessage", (message: Message & { conversationId?: string; groupId?: string }) => {
       setMessages((prev) => {
         const isCurrentDM = activeRoom?.type === "dm" && message.conversationId === activeRoom.conversationId;
@@ -658,7 +654,7 @@ export default function MessagesPage() {
 
             {/* Pending Friend Requests Section */}
             {incomingRequests.length > 0 && (
-              <div style={{ marginBottom: 18, background: "var(--surface)", border: "1px solid rgba(0, 201, 141, 0.3)", borderRadius: 12, padding: "12px 10px" }}>
+              <div style={{ marginBottom: 18, background: "var(--surface)", border: "1px solid rgba(var(--purple-rgb), 0.3)", borderRadius: 12, padding: "12px 10px" }}>
                 <p style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent)" }} />
                   Friend Requests ({incomingRequests.length})
@@ -1005,7 +1001,7 @@ export default function MessagesPage() {
                   type="button"
                   onClick={() => setShowPollModal(true)}
                   className="glass-pill"
-                  style={{ border: "1px solid rgba(0, 201, 141, 0.35)", color: "#00c98d", cursor: "pointer", background: "rgba(0, 201, 141, 0.08)" }}
+                  style={{ border: "1px solid rgba(var(--purple-rgb), 0.35)", color: "var(--purple)", cursor: "pointer", background: "rgba(var(--purple-rgb), 0.08)" }}
                 >
                   📊 Ask Look Opinion (Poll)
                 </button>
@@ -1072,7 +1068,7 @@ export default function MessagesPage() {
             {/* Modal Header */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(0, 201, 141, 0.12)", border: "1px solid rgba(0, 201, 141, 0.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(var(--purple-rgb), 0.12)", border: "1px solid rgba(var(--purple-rgb), 0.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="8.5" cy="7" r="4" />
                     <line x1="20" y1="8" x2="20" y2="14" /><line x1="23" y1="11" x2="17" y2="11" />

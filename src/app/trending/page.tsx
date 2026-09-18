@@ -45,13 +45,13 @@ export interface TrendingOutfit {
 }
 
 const BRAND_STORIES = [
-  { id: "all", name: "All Brands", logo: "ALL", bg: "linear-gradient(135deg, #00c98d, #0ea5e9)", active: true },
-  { id: "zara", name: "Zara", handle: "@zara_official", logo: "ZR", bg: "linear-gradient(135deg, #18181b, #3f3f46)" },
-  { id: "hm", name: "H&M Studio", handle: "@hm_edition", logo: "HM", bg: "linear-gradient(135deg, #e11d48, #f43f5e)" },
-  { id: "mango", name: "Mango", handle: "@mangostudio", logo: "MG", bg: "linear-gradient(135deg, #d97706, #f59e0b)" },
-  { id: "sunita", name: "Sunita S.", handle: "@sunitashekhawat_official", logo: "SS", bg: "linear-gradient(135deg, #854d0e, #ca8a04)" },
-  { id: "urbanic", name: "Urbanic", handle: "@urbanic_official", logo: "UB", bg: "linear-gradient(135deg, #7c3aed, #a855f7)" },
-  { id: "massimo", name: "Massimo D.", handle: "@massimodutti", logo: "MD", bg: "linear-gradient(135deg, #0f172a, #334155)" },
+  { id: "all", name: "All Brands", logo: "ALL", bg: "var(--purple)", active: true },
+  { id: "zara", name: "Zara", handle: "@zara_official", logo: "ZR", bg: "#27272a" },
+  { id: "hm", name: "H&M Studio", handle: "@hm_edition", logo: "HM", bg: "#27272a" },
+  { id: "mango", name: "Mango", handle: "@mangostudio", logo: "MG", bg: "#27272a" },
+  { id: "sunita", name: "Sunita S.", handle: "@sunitashekhawat_official", logo: "SS", bg: "#27272a" },
+  { id: "urbanic", name: "Urbanic", handle: "@urbanic_official", logo: "UB", bg: "var(--purple)" },
+  { id: "massimo", name: "Massimo D.", handle: "@massimodutti", logo: "MD", bg: "#27272a" },
 ];
 
 const CATEGORIES = [
@@ -72,7 +72,7 @@ const INITIAL_OUTFITS: TrendingOutfit[] = [
     brandStore: "Zara Official",
     brandHandle: "@zara_official",
     brandAvatar: "ZR",
-    brandAvatarBg: "linear-gradient(135deg, #18181b, #3f3f46)",
+    brandAvatarBg: "#27272a",
     isVerified: true,
     location: "Portofino, Italy • Spring/Summer '26 Drop",
     image: "/images/look_brunch.png",
@@ -98,7 +98,7 @@ const INITIAL_OUTFITS: TrendingOutfit[] = [
     brandStore: "Mango Studio",
     brandHandle: "@mangostudio",
     brandAvatar: "MG",
-    brandAvatarBg: "linear-gradient(135deg, #d97706, #f59e0b)",
+    brandAvatarBg: "#27272a",
     isVerified: true,
     location: "Milan Fashion Week • Evening Capsule",
     image: "/images/look_date.png",
@@ -123,7 +123,7 @@ const INITIAL_OUTFITS: TrendingOutfit[] = [
     brandStore: "H&M Edition",
     brandHandle: "@hm_edition",
     brandAvatar: "HM",
-    brandAvatarBg: "linear-gradient(135deg, #e11d48, #f43f5e)",
+    brandAvatarBg: "#27272a",
     isVerified: true,
     location: "Paris, France • Street Style Edit",
     image: "/images/look_errands.png",
@@ -148,7 +148,7 @@ const INITIAL_OUTFITS: TrendingOutfit[] = [
     brandStore: "Sunita Shekhawat Gallery",
     brandHandle: "@sunitashekhawat_official",
     brandAvatar: "SS",
-    brandAvatarBg: "linear-gradient(135deg, #854d0e, #ca8a04)",
+    brandAvatarBg: "#27272a",
     isVerified: true,
     location: "London Mayfair • Haute Couture Capsule",
     image: "/images/look_office.png",
@@ -172,7 +172,7 @@ const INITIAL_OUTFITS: TrendingOutfit[] = [
     brandStore: "Urbanic Atelier",
     brandHandle: "@urbanic_official",
     brandAvatar: "UB",
-    brandAvatarBg: "linear-gradient(135deg, #7c3aed, #a855f7)",
+    brandAvatarBg: "var(--purple)",
     isVerified: true,
     location: "Manhattan, New York • After Hours Gala",
     image: "/images/look_party.png",
@@ -197,7 +197,7 @@ const INITIAL_OUTFITS: TrendingOutfit[] = [
     brandStore: "Massimo Dutti",
     brandHandle: "@massimodutti",
     brandAvatar: "MD",
-    brandAvatarBg: "linear-gradient(135deg, #0f172a, #334155)",
+    brandAvatarBg: "#27272a",
     isVerified: true,
     location: "Copenhagen, Denmark • Winter Editorial",
     image: "/images/look_formal.png",
@@ -489,7 +489,7 @@ export default function TrendingPage() {
                         <span className="ig-brand-name">{outfit.brandStore}</span>
                         {outfit.isVerified && (
                           <span className="ig-verified-badge" title="Verified Brand Partner">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="#00c98d">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--purple)">
                               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                             </svg>
                           </span>
@@ -805,7 +805,7 @@ export default function TrendingPage() {
                       <span className="ig-brand-name">{selectedOutfit.brandStore}</span>
                       {selectedOutfit.isVerified && (
                         <span className="ig-verified-badge">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="#00c98d">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--purple)">
                             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                           </svg>
                         </span>

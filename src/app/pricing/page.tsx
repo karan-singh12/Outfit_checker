@@ -208,7 +208,7 @@ export default function PricingPage() {
         </div>
 
         <h1 style={{ fontSize: "clamp(30px, 4.5vw, 44px)", fontWeight: 800, color: "var(--text)", lineHeight: 1.2, marginBottom: 14 }}>
-          Invest in <span style={{ background: "linear-gradient(135deg, #00c98d, #0ea5e9, #8b5cf6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>confidence &amp; scale</span>
+          Invest in <span style={{ color: "var(--purple)" }}>confidence &amp; scale</span>
         </h1>
 
         <p style={{ color: "var(--text-soft)", fontSize: 16, maxWidth: 560, margin: "0 auto", lineHeight: 1.6 }}>
@@ -313,9 +313,9 @@ export default function PricingPage() {
         <span style={{
           padding: "3px 9px",
           borderRadius: 99,
-          background: "rgba(0, 201, 141, 0.12)",
-          border: "1px solid rgba(0, 201, 141, 0.3)",
-          color: "#00c98d",
+          background: "rgba(var(--purple-rgb), 0.12)",
+          border: "1px solid rgba(var(--purple-rgb), 0.3)",
+          color: "var(--purple)",
           fontSize: 11,
           fontWeight: 700
         }}>
@@ -337,7 +337,7 @@ export default function PricingPage() {
               flexDirection: "column",
               position: "relative",
               overflow: "hidden",
-              boxShadow: plan.popular ? "0 12px 40px rgba(0, 201, 141, 0.12)" : "0 8px 30px rgba(0,0,0,0.04)",
+              boxShadow: plan.popular ? "0 12px 40px rgba(var(--purple-rgb), 0.12)" : "0 8px 30px rgba(0,0,0,0.04)",
               transition: "transform 0.2s ease"
             }}
           >
@@ -349,7 +349,7 @@ export default function PricingPage() {
                 left: 0,
                 right: 0,
                 height: 4,
-                background: "linear-gradient(90deg, #00c98d, #0ea5e9, #8b5cf6)"
+                background: "var(--purple)"
               }} />
             )}
 
@@ -360,9 +360,9 @@ export default function PricingPage() {
                 alignSelf: "flex-start",
                 padding: "4px 10px",
                 borderRadius: 99,
-                background: "rgba(0, 201, 141, 0.12)",
-                border: "1px solid rgba(0, 201, 141, 0.3)",
-                color: "#00c98d",
+                background: "rgba(var(--purple-rgb), 0.12)",
+                border: "1px solid rgba(var(--purple-rgb), 0.3)",
+                color: "var(--purple)",
                 fontSize: 11,
                 fontWeight: 700,
                 textTransform: "uppercase",
@@ -415,7 +415,7 @@ export default function PricingPage() {
               </p>
               {plan.features.map((feat, fi) => (
                 <div key={fi} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13, color: "var(--text-soft)", lineHeight: 1.45 }}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00c98d" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                   <span>{feat}</span>
@@ -453,12 +453,12 @@ export default function PricingPage() {
           <p style={{ fontSize: 12, color: "var(--text-soft)" }}>Shoppers who try outfits digitally are 2.4x more likely to complete checkout.</p>
         </div>
         <div>
-          <div style={{ fontSize: 34, fontWeight: 800, color: "#0ea5e9", marginBottom: 4 }}>-28%</div>
+          <div style={{ fontSize: 34, fontWeight: 800, color: "var(--purple)", marginBottom: 4 }}>-28%</div>
           <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text)", marginBottom: 4 }}>Lower Fashion Returns</div>
           <p style={{ fontSize: 12, color: "var(--text-soft)" }}>Solves size and fit ambiguity before shipping, saving high courier return costs.</p>
         </div>
         <div>
-          <div style={{ fontSize: 34, fontWeight: 800, color: "#8b5cf6", marginBottom: 4 }}>&lt; 15s</div>
+          <div style={{ fontSize: 34, fontWeight: 800, color: "var(--purple)", marginBottom: 4 }}>&lt; 15s</div>
           <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text)", marginBottom: 4 }}>Ultra-Fast Render Speed</div>
           <p style={{ fontSize: 12, color: "var(--text-soft)" }}>Engineered for instant gratification on mobile and desktop web.</p>
         </div>

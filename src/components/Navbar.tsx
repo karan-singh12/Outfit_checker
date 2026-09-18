@@ -18,7 +18,7 @@ function ThreadflankLogo() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        boxShadow: "0 2px 10px rgba(14, 165, 233, 0.2)",
+        boxShadow: "0 2px 10px rgba(var(--purple-rgb), 0.2)",
         background: "#0c111d",
         border: "1px solid rgba(255, 255, 255, 0.1)",
         flexShrink: 0,
@@ -96,10 +96,7 @@ export default function Navbar() {
             <span
               className="navbar-logo-text"
               style={{
-                background: "linear-gradient(135deg, #00c98d 0%, #0ea5e9 50%, #8b5cf6 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
+                color: "var(--purple)",
               }}
             >
               Threadflank<span style={{ WebkitTextFillColor: "transparent" }}>.</span>
@@ -144,9 +141,9 @@ export default function Navbar() {
               onClick={() => setShowWhatsAppModal(true)}
               className="glass-pill"
               style={{
-                background: "rgba(37, 211, 102, 0.08)",
-                borderColor: "rgba(37, 211, 102, 0.25)",
-                color: "rgba(37, 211, 102, 0.8)",
+                background: "rgba(var(--purple-rgb), 0.08)",
+                borderColor: "rgba(var(--purple-rgb), 0.25)",
+                color: "var(--purple)",
                 cursor: "pointer",
                 display: "inline-flex",
                 alignItems: "center",

@@ -3,12 +3,9 @@ import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
-import { fetchLooks, toggleLikeLook } from "../../services/api";
 
 // ── Types ─────────────────────────────────────────────────────────────────
 export type Category = "all"|"tops"|"bottoms"|"dresses"|"outerwear"|"footwear"|"bags"|"jewellery"|"eyewear"|"makeup";
-type OccasionFilter = "all"|"casual"|"formal"|"party"|"work"|"date";
-type ClosetTab = "items"|"looks"|"occasions";
 
 interface WardrobeItem {
   id: string;
@@ -17,17 +14,6 @@ interface WardrobeItem {
   brand?: string;
   image: string;
   color?: string;
-}
-
-interface SavedLook {
-  id: string;
-  name: string;
-  occasion: OccasionFilter;
-  image: string;
-  gradient: string;
-  pieces: string[];
-  date: string;
-  liked: boolean;
 }
 
 // ── Category Icon ────────────────────────────────────────────────────────
@@ -57,25 +43,6 @@ export function CategoryIcon({ id, className = "cat-svg" }: { id: string; classN
   }
 }
 
-// ── Occasion Icon ─────────────────────────────────────────────────────────
-const OccasionIcon = ({ id, className = "filter-svg" }: { id: OccasionFilter; className?: string }) => {
-  const s = { width: 14, height: 14 };
-  switch (id) {
-    case "casual":
-      return <svg {...s} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>;
-    case "work":
-      return <svg {...s} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>;
-    case "formal":
-      return <svg {...s} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
-    case "party":
-      return <svg {...s} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 3h12l-6 9z"/><line x1="12" y1="12" x2="12" y2="20"/><line x1="8" y1="20" x2="16" y2="20"/></svg>;
-    case "date":
-      return <svg {...s} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>;
-    default:
-      return <svg {...s} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>;
-  }
-};
-
 // ── Constants ────────────────────────────────────────────────────────────
 const CATEGORIES = [
   { id:"all",       label:"All Items" },
@@ -90,39 +57,24 @@ const CATEGORIES = [
   { id:"makeup",    label:"Makeup & Beauty",   group:"Beauty" },
 ];
 
-const CATEGORY_GROUPS = ["Clothing", "Shoes & Bags", "Accessories", "Beauty"];
-
-const MOCK_LOOKS: SavedLook[] = [
-  { id:"1", name:"Weekend Brunch", occasion:"casual",  image:"/images/look_brunch.png",  gradient:"linear-gradient(135deg,#4a1942,#7c3aed)", pieces:["dresses","footwear","eyewear","makeup"], date:"Today",       liked:true  },
-  { id:"2", name:"Office Ready",   occasion:"work",    image:"/images/look_office.png",  gradient:"linear-gradient(135deg,#1e3a5f,#374151)", pieces:["tops","bottoms","outerwear","footwear","bags"], date:"2 days ago",  liked:false },
-  { id:"3", name:"Friday Night",   occasion:"party",   image:"/images/look_party.png",   gradient:"linear-gradient(135deg,#4a1942,#7c3aed)", pieces:["dresses","footwear","jewellery","makeup"],     date:"3 days ago",  liked:true  },
-  { id:"4", name:"First Date",     occasion:"date",    image:"/images/look_date.png",    gradient:"linear-gradient(135deg,#881337,#db2777)", pieces:["dresses","footwear","bags","jewellery"],        date:"5 days ago",  liked:false },
-  { id:"5", name:"Formal Event",   occasion:"formal",  image:"/images/look_formal.png",  gradient:"linear-gradient(135deg,#111827,#374151)", pieces:["dresses","footwear","jewellery","eyewear"],     date:"1 week ago",  liked:true  },
-  { id:"6", name:"Sunday Errands", occasion:"casual",  image:"/images/look_errands.png", gradient:"linear-gradient(135deg,#7c2d12,#92400e)", pieces:["tops","bottoms","footwear","outerwear"],        date:"1 week ago",  liked:false },
-];
-
-const LOOK_FILTERS: { id: OccasionFilter; label: string }[] = [
-  { id:"all",    label:"All Looks"  },
-  { id:"casual", label:"Casual"    },
-  { id:"work",   label:"Work"      },
-  { id:"formal", label:"Formal"    },
-  { id:"party",  label:"Party"     },
-  { id:"date",   label:"Date Night"},
-];
+// ── Wardrobe / Looks section switcher — shared visual language, real routes ──
+function ClosetSectionNav({ active }: { active: "items" | "looks" }) {
+  return (
+    <div className="tf2-segmented">
+      <Link href="/closet" className={`tf2-segment${active === "items" ? " active" : ""}`}>Wardrobe</Link>
+      <Link href="/looks" className={`tf2-segment${active === "looks" ? " active" : ""}`}>Saved Looks</Link>
+    </div>
+  );
+}
 
 // ══════════════════════════════════════════════════════════════════════════
 export default function ClosetPage() {
-  const { user, loading: authLoading, token } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
-  // ── Tab state
-  const [activeTab, setActiveTab] = useState<ClosetTab>("items");
-
-  // ── Items (Wardrobe) state
   const [activeCategory, setActiveCategory] = useState<Category>("all");
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newBrand, setNewBrand] = useState("");
   const [newCategory, setNewCategory] = useState<Category>("tops");
@@ -130,11 +82,6 @@ export default function ClosetPage() {
   const [items, setItems] = useState<WardrobeItem[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-
-  // ── Looks state
-  const [lookFilter, setLookFilter] = useState<OccasionFilter>("all");
-  const [looks, setLooks] = useState<SavedLook[]>([]);
-  const [looksLoading, setLooksLoading] = useState(true);
 
   // ── Auth guard
   useEffect(() => {
@@ -157,27 +104,6 @@ export default function ClosetPage() {
 
   useEffect(() => { if (user) fetchWardrobeItems(); }, [user]);
 
-  // ── Fetch looks
-  useEffect(() => {
-    async function loadLooks() {
-      if (!token) { setLooks(MOCK_LOOKS); setLooksLoading(false); return; }
-      try {
-        const data = await fetchLooks(token);
-        if (data && data.length > 0) {
-          setLooks(data.map((l: any) => ({
-            id: l.id, name: l.name, occasion: l.occasion as OccasionFilter,
-            image: l.image.startsWith("/public") ? `http://127.0.0.1:3003${l.image}` : l.image,
-            gradient: l.gradient || "linear-gradient(135deg,#1e3a5f,#374151)",
-            pieces: l.pieces,
-            date: new Date(l.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" }),
-            liked: l.liked
-          })));
-        } else { setLooks(MOCK_LOOKS); }
-      } catch { setLooks(MOCK_LOOKS); } finally { setLooksLoading(false); }
-    }
-    loadLooks();
-  }, [token]);
-
   // ── Helpers
   const getFullImageUrl = (p: string) => {
     if (!p) return "/images/white_oxford.png";
@@ -191,9 +117,6 @@ export default function ClosetPage() {
       const matchSearch = !search || item.name.toLowerCase().includes(search.toLowerCase()) || (item.brand?.toLowerCase().includes(search.toLowerCase()));
       return matchCat && matchSearch;
     }), [items, activeCategory, search]);
-
-  const countForCat = (cat: Category) => cat === "all" ? items.length : items.filter(i => i.category === cat).length;
-  const filteredLooks = lookFilter === "all" ? looks : looks.filter(l => l.occasion === lookFilter);
 
   // ── Add wardrobe item
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -246,449 +169,131 @@ export default function ClosetPage() {
     } catch (err) { console.error("Error deleting item:", err); }
   };
 
-  const toggleLike = async (id: string) => {
-    const isMock = ["1","2","3","4","5","6"].includes(id);
-    setLooks(prev => prev.map(l => l.id === id ? { ...l, liked: !l.liked } : l));
-    if (isMock || !token) return;
-    try { await toggleLikeLook(token, id); }
-    catch { setLooks(prev => prev.map(l => l.id === id ? { ...l, liked: !l.liked } : l)); }
-  };
-
   if (authLoading || !user) {
     return (
-      <div className="page-wrapper" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 64px)" }}>
-        <p style={{ color: "var(--text-soft)" }}>Loading your closet...</p>
+      <div className="tf2-page" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 64px)" }}>
+        <p style={{ color: "var(--tf-ink-soft)" }}>Loading your closet...</p>
       </div>
     );
   }
 
   return (
-    <div className="page-wrapper" style={{ paddingTop: 24 }}>
+    <div className="tf2-page" style={{ padding: "28px 56px 64px", minHeight: "calc(100vh - 64px)" }}>
 
-      {/* ── Tab Switcher ── */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, gap: 12 }}>
-        <div style={{ display: "flex", background: "var(--surface)", borderRadius: "var(--r-md)", padding: 4, gap: 2, border: "1px solid var(--border)" }}>
-          {(["items", "looks", "occasions"] as ClosetTab[]).map(tab => (
-            <button
-              key={tab}
-              type="button"
-              onClick={() => setActiveTab(tab)}
-              style={{
-                padding: "7px 18px",
-                borderRadius: "var(--r-sm)",
-                border: "none",
-                cursor: "pointer",
-                fontSize: 13,
-                fontWeight: activeTab === tab ? 600 : 400,
-                background: activeTab === tab ? "var(--accent)" : "transparent",
-                color: activeTab === tab ? "#fff" : "var(--text-soft)",
-                transition: "all 0.2s ease",
-                textTransform: "capitalize",
-              }}
-            >
-              {tab === "items" ? "Items" : tab === "looks" ? "Saved Looks" : "Occasions"}
-            </button>
-          ))}
-        </div>
+      {/* ── Compact toolbar (no oversized title — just the switcher + controls) ── */}
+      <div className="tf2-closet-header">
+        <ClosetSectionNav active="items" />
 
-        {activeTab === "items" && (
-          <button type="button" className="btn btn-gradient btn-sm" onClick={() => setShowModal(true)}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Add Item
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <button type="button" className="tf2-btn tf2-btn-primary" onClick={() => setShowModal(true)}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add item
           </button>
-        )}
-        {activeTab === "looks" && (
-          <Link href="/drape" className="btn btn-gradient btn-sm">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Create Look
-          </Link>
-        )}
-        {activeTab === "occasions" && (
-          <Link href="/studio" className="btn btn-gradient btn-sm">
-            Try in Studio
-          </Link>
-        )}
+        </div>
       </div>
 
-      {/* ═══════════════════════════════ ITEMS TAB ════════════════════════════════ */}
-      {activeTab === "items" && (
-        <div className="wardrobe-layout">
-          {/* Sidebar */}
-          <aside className="wardrobe-sidebar">
-            <button type="button" className={`sidebar-link${activeCategory === "all" ? " active" : ""}`} onClick={() => setActiveCategory("all")}>
-              <span className="sidebar-icon" style={{ display: "flex", alignItems: "center" }}><CategoryIcon id="all" /></span>
-              All Items
-              <span className="sidebar-count">{items.length}</span>
-            </button>
-            {CATEGORY_GROUPS.map(group => (
-              <div key={group}>
-                <p className="sidebar-section-label">{group}</p>
-                {CATEGORIES.filter(c => c.group === group).map(cat => (
-                  <button key={cat.id} type="button" className={`sidebar-link${activeCategory === cat.id ? " active" : ""}`} onClick={() => setActiveCategory(cat.id as Category)}>
-                    <span className="sidebar-icon" style={{ display: "flex", alignItems: "center" }}><CategoryIcon id={cat.id} /></span>
-                    {cat.label}
-                    <span className="sidebar-count">{countForCat(cat.id as Category)}</span>
-                  </button>
-                ))}
-              </div>
-            ))}
-          </aside>
-
-          {/* Main */}
-          <div className="wardrobe-main">
-            <div className="wardrobe-toolbar">
-              <div className="wardrobe-search">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="text" placeholder="Search items, brands…" value={search} onChange={e => setSearch(e.target.value)} />
-              </div>
-              <button
-                type="button"
-                onClick={() => setMobileFilterOpen(true)}
-                className="mobile-filter-btn btn btn-ghost btn-sm"
-                style={{
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "8px 14px",
-                  fontSize: 12,
-                  fontWeight: 600,
-                  borderRadius: "var(--r-sm)",
-                  flexShrink: 0
-                }}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-                </svg>
-                {activeCategory === "all" ? "Categories" : CATEGORIES.find(c => c.id === activeCategory)?.label || "Filtered"}
-                {activeCategory !== "all" && (
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent)" }} />
-                )}
-              </button>
-              <div className="badge badge-muted" style={{ padding: "8px 14px" }}>{filtered.length} item{filtered.length !== 1 ? "s" : ""}</div>
-            </div>
-
-            {filtered.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-state-icon">
-                  <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.84H5v10a2 2 0 002 2h10a2 2 0 002-2V10h1.15a1 1 0 00.99-.84l.58-3.57a2 2 0 00-1.34-2.23z"/></svg>
-                </div>
-                <h3 className="empty-state-title">{search ? "No items match your search" : "Your closet is empty"}</h3>
-                <p className="empty-state-desc">Add your first clothing item to get started.</p>
-                <button type="button" className="btn btn-gradient" onClick={() => setShowModal(true)}>Add First Item</button>
-              </div>
-            ) : (
-              <div className="item-grid">
-                <div className="item-card-add" onClick={() => setShowModal(true)}>
-                  <div className="item-card-add-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                  </div>
-                  <p className="item-card-add-title">Add New Item</p>
-                  <p className="item-card-add-sub">Upload or paste a link</p>
-                </div>
-                {filtered.map(item => (
-                  <div key={item.id} className="item-card">
-                    <div className="item-card-thumb" style={{ background: `${item.color || "#3b82f6"}22` }}>
-                      <img src={getFullImageUrl(item.image)} alt={item.name} />
-                      <span className="item-cat-badge">{item.category}</span>
-                      <div className="item-card-overlay" style={{ display: "flex", flexDirection: "column", gap: 8, padding: 8 }}>
-                        <Link href="/studio" className="btn btn-gradient btn-sm" style={{ width: "100%", textAlign: "center" }}>Try On</Link>
-                        <button type="button" onClick={() => deleteItem(item.id)} className="btn btn-ghost btn-sm" style={{ width: "100%", background: "rgba(220, 38, 38, 0.2)", color: "var(--danger)", border: "none" }}>Delete</button>
-                      </div>
-                    </div>
-                    <div className="item-card-info">
-                      <p className="item-card-name">{item.name}</p>
-                      <p className="item-card-brand">{item.brand || "My Brand"}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+      {/* Search + filter chips */}
+      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", borderRadius: 999, background: "var(--tf-surface)", border: "1px solid var(--tf-hairline)", flex: "1 1 240px", maxWidth: 320 }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--tf-ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input
+            type="text"
+            placeholder="Search items, brands…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            style={{ border: "none", outline: "none", background: "transparent", fontSize: 13, color: "var(--tf-ink)", flex: 1, fontFamily: "inherit" }}
+          />
         </div>
-      )}
+        <span style={{ fontSize: 12.5, color: "var(--tf-ink-faint)", fontWeight: 600 }}>{filtered.length} item{filtered.length !== 1 ? "s" : ""}</span>
+      </div>
 
-      {/* ═══════════════════════════════ LOOKS TAB ════════════════════════════════ */}
-      {activeTab === "looks" && (
-        <div className="looks-page" style={{ paddingTop: 0 }}>
-          <div className="looks-filters" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-            <div className="looks-filters-desktop" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {LOOK_FILTERS.map(f => (
-                <button key={f.id} type="button" className={`filter-chip${lookFilter === f.id ? " active" : ""}`} onClick={() => setLookFilter(f.id)} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <OccasionIcon id={f.id} />
-                  {f.label}
-                  {f.id !== "all" && <span style={{ marginLeft: 4, opacity: 0.6 }}>{looks.filter(l => l.occasion === f.id).length}</span>}
-                </button>
-              ))}
-            </div>
-            <button
-              type="button"
-              onClick={() => setMobileFilterOpen(true)}
-              className="mobile-filter-btn btn btn-ghost btn-sm"
-              style={{
-                alignItems: "center",
-                gap: 6,
-                padding: "8px 14px",
-                fontSize: 12,
-                fontWeight: 600,
-                borderRadius: "var(--r-sm)",
-                flexShrink: 0
-              }}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-              </svg>
-              {lookFilter === "all" ? "Occasions" : LOOK_FILTERS.find(f => f.id === lookFilter)?.label || "Filtered"}
-              {lookFilter !== "all" && (
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent)" }} />
-              )}
-            </button>
+      <div className="tf2-bubble-row" style={{ marginBottom: 28 }}>
+        <button type="button" className={`tf2-chip${activeCategory === "all" ? " active" : ""}`} onClick={() => setActiveCategory("all")}>
+          All · {items.length}
+        </button>
+        {CATEGORIES.filter(c => c.id !== "all").map(cat => (
+          <button key={cat.id} type="button" className={`tf2-chip${activeCategory === cat.id ? " active" : ""}`} onClick={() => setActiveCategory(cat.id as Category)}>
+            {cat.label}
+          </button>
+        ))}
+      </div>
+
+      {filtered.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "60px 20px" }}>
+          <div style={{ display: "inline-flex", padding: 16, borderRadius: "50%", background: "var(--tf-surface)", border: "1px solid var(--tf-hairline)", color: "var(--tf-ink-faint)", marginBottom: 16 }}>
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.84H5v10a2 2 0 002 2h10a2 2 0 002-2V10h1.15a1 1 0 00.99-.84l.58-3.57a2 2 0 00-1.34-2.23z"/></svg>
           </div>
-
-          {looksLoading ? (
-            <div className="empty-state"><p style={{ color: "var(--text-soft)" }}>Loading looks...</p></div>
-          ) : filteredLooks.length === 0 ? (
-            <div className="empty-state">
-              <div className="empty-state-icon">
-                <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-              </div>
-              <h3 className="empty-state-title">No {lookFilter === "all" ? "" : lookFilter + " "}looks yet</h3>
-              <p className="empty-state-desc">Open Drape Studio and save a complete outfit as a look.</p>
-              <Link href="/studio" className="btn btn-gradient" style={{ marginTop: 8 }}>Open Drape</Link>
-            </div>
-          ) : (
-            <div className="looks-grid">
-              {filteredLooks.map(look => (
-                <div key={look.id} className="look-card">
-                  <div className="look-card-thumb">
-                    <img src={look.image} alt={look.name} className="look-card-image" style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", inset: 0, zIndex: 1 }} />
-                    <div className="look-card-gradient" style={{ zIndex: 2 }} />
-                    <div className="look-card-tag" style={{ zIndex: 3 }}>
-                      <span className="badge badge-purple" style={{ backdropFilter: "blur(8px)", display: "inline-flex", alignItems: "center", gap: 5 }}>
-                        <OccasionIcon id={look.occasion} /> {look.occasion}
-                      </span>
-                    </div>
-                    <div className="look-card-overlay-actions" style={{ zIndex: 3 }}>
-                      <Link href="/studio" className="btn btn-gradient btn-sm">Open in Drape</Link>
-                    </div>
-                  </div>
-                  <div className="look-card-info">
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-                      <p className="look-card-name">{look.name}</p>
-                      <button type="button" onClick={() => toggleLike(look.id)} aria-label={look.liked ? "Unlike" : "Like"} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", padding: 0 }}>
-                        {look.liked
-                          ? <svg width="18" height="18" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-                          : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--muted)" }}><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-                        }
-                      </button>
-                    </div>
-                    <div className="look-card-meta">
-                      <span>{look.date}</span><span>·</span><span>{look.pieces.length} pieces</span>
-                    </div>
-                    <div className="look-card-pieces">
-                      {look.pieces.map((p, i) => (
-                        <div key={i} className="piece-dot" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <CategoryIcon id={p} className="piece-dot-svg" />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <h3 className="tf2-serif" style={{ fontSize: 22, fontWeight: 600, marginBottom: 8, color: "var(--tf-ink)" }}>{search ? "No items match your search" : "Your closet is empty"}</h3>
+          <p style={{ color: "var(--tf-ink-soft)", fontSize: 14, marginBottom: 20 }}>Add your first clothing item to get started.</p>
+          <button type="button" className="tf2-btn tf2-btn-primary" onClick={() => setShowModal(true)}>Add first item</button>
         </div>
-      )}
-
-      {/* ═══════════════════════════════ OCCASIONS TAB ════════════════════════════ */}
-      {activeTab === "occasions" && (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: 400, gap: 20, textAlign: "center" }}>
-          <div style={{ width: 72, height: 72, borderRadius: "50%", background: "var(--surface)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-              <path d="M9 16l2 2 4-4"/>
-            </svg>
-          </div>
-          <div>
-            <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8, color: "var(--text)" }}>Occasion Planner</h3>
-            <p style={{ color: "var(--text-soft)", fontSize: 14, maxWidth: 320, lineHeight: 1.6 }}>
-              Tell us about your event and we'll pick the best outfit combinations from your closet.
-            </p>
-          </div>
-          <Link href="/studio" className="btn btn-gradient" style={{ padding: "12px 28px" }}>
-            Open Drape Studio
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </Link>
+      ) : (
+        <div className="tf2-item-grid">
+          {filtered.map(item => (
+            <div key={item.id} className="tf2-item-card">
+              <div className="tf2-item-photo">
+                <img src={getFullImageUrl(item.image)} alt={item.name} />
+                <div style={{ position: "absolute", inset: 0, background: "oklch(23% 0.015 50 / 0)", display: "flex", flexDirection: "column", justifyContent: "flex-end", gap: 8, padding: 10, opacity: 0, transition: "all 0.2s ease" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.background = "color-mix(in oklch, var(--tf-ink) 45%, transparent)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.opacity = "0"; e.currentTarget.style.background = "oklch(23% 0.015 50 / 0)"; }}
+                >
+                  <Link href="/studio" className="tf2-btn tf2-btn-primary tf2-btn-sm" style={{ width: "100%" }}>Try on</Link>
+                  <button type="button" onClick={() => deleteItem(item.id)} className="tf2-btn tf2-btn-sm" style={{ width: "100%", background: "color-mix(in oklch, var(--tf-surface) 90%, transparent)", color: "var(--danger)" }}>Delete</button>
+                </div>
+              </div>
+              <span className="tf2-item-name">{item.name}</span>
+              <span className="tf2-item-cat">{item.brand || item.category}</span>
+            </div>
+          ))}
         </div>
       )}
 
       {/* ── Add Item Modal ── */}
       {showModal && (
-        <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
-          <div className="modal">
-            <div className="modal-header">
-              <h3 className="modal-title">Add to Closet</h3>
-              <button className="modal-close" onClick={() => setShowModal(false)}>×</button>
+        <div style={{ position: "fixed", inset: 0, background: "oklch(23% 0.015 50 / 0.35)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }} onClick={e => e.target === e.currentTarget && setShowModal(false)}>
+          <div className="tf2-card" style={{ background: "var(--tf-surface)", padding: 28, width: "100%", maxWidth: 440 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+              <h3 className="tf2-serif" style={{ fontSize: 22, fontWeight: 600, margin: 0, color: "var(--tf-ink)" }}>Add to closet</h3>
+              <button onClick={() => setShowModal(false)} style={{ background: "none", border: "none", fontSize: 20, color: "var(--tf-ink-faint)", cursor: "pointer" }}>×</button>
             </div>
-            <label className="upload-zone" style={{ marginBottom: 20, minHeight: 120, cursor: "pointer" }}>
+            <label style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 18, minHeight: 120, cursor: "pointer", border: "1.5px dashed var(--tf-hairline)", borderRadius: 16, padding: 16 }}>
               <input type="file" accept="image/*" onChange={handleFileChange} style={{ display: "none" }} />
               {uploading ? (
-                <p style={{ fontSize: 13, color: "var(--text-soft)" }}>Uploading image...</p>
+                <p style={{ fontSize: 13, color: "var(--tf-ink-soft)" }}>Uploading image...</p>
               ) : newImage ? (
-                <img src={getFullImageUrl(newImage)} alt="Preview" style={{ maxHeight: 100, borderRadius: "var(--r-xs)" }} />
+                <img src={getFullImageUrl(newImage)} alt="Preview" style={{ maxHeight: 100, borderRadius: 10 }} />
               ) : (
                 <>
-                  <div className="upload-zone-icon" style={{ width: 44, height: 44 }}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                  </div>
-                  <p className="upload-zone-title" style={{ fontSize: 14 }}>Upload garment image</p>
-                  <p className="upload-zone-sub">or click to browse files</p>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--tf-accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: "var(--tf-ink)", margin: 0 }}>Upload garment image</p>
+                  <p style={{ fontSize: 11.5, color: "var(--tf-ink-faint)", margin: 0 }}>or click to browse files</p>
                 </>
               )}
             </label>
-            {uploadError && <p style={{ color: "var(--danger)", fontSize: 12, marginBottom: 10 }}>{uploadError}</p>}
-            <div className="form-group">
-              <label className="form-label">Item Name</label>
-              <input className="form-input" placeholder="e.g. Black Blazer" value={newName} onChange={e => setNewName(e.target.value)} />
+            {uploadError && <p style={{ color: "#b3341c", fontSize: 12, marginBottom: 10 }}>{uploadError}</p>}
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
+              <label style={{ fontSize: 11, fontWeight: 600, color: "var(--tf-ink-faint)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Item Name</label>
+              <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="e.g. Black Blazer" style={{ padding: "10px 14px", background: "var(--tf-ivory)", border: "1px solid var(--tf-hairline)", borderRadius: 10, color: "var(--tf-ink)", outline: "none" }} />
             </div>
-            <div className="form-group">
-              <label className="form-label">Brand (optional)</label>
-              <input className="form-input" placeholder="e.g. Zara" value={newBrand} onChange={e => setNewBrand(e.target.value)} />
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
+              <label style={{ fontSize: 11, fontWeight: 600, color: "var(--tf-ink-faint)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Brand (optional)</label>
+              <input value={newBrand} onChange={e => setNewBrand(e.target.value)} placeholder="e.g. Zara" style={{ padding: "10px 14px", background: "var(--tf-ivory)", border: "1px solid var(--tf-hairline)", borderRadius: 10, color: "var(--tf-ink)", outline: "none" }} />
             </div>
-            <div className="form-group">
-              <label className="form-label">Category</label>
-              <div className="cat-chip-row">
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 22 }}>
+              <label style={{ fontSize: 11, fontWeight: 600, color: "var(--tf-ink-faint)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Category</label>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {CATEGORIES.filter(c => c.id !== "all").map(cat => (
-                  <button key={cat.id} type="button" className={`cat-chip${newCategory === cat.id ? " active" : ""}`} onClick={() => setNewCategory(cat.id as Category)} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <CategoryIcon id={cat.id} /> {cat.label}
-                  </button>
+                  <button key={cat.id} type="button" className={`tf2-chip${newCategory === cat.id ? " active" : ""}`} onClick={() => setNewCategory(cat.id as Category)}>{cat.label}</button>
                 ))}
               </div>
             </div>
-            <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
-              <button type="button" className="btn btn-ghost" style={{ flex: 1 }} onClick={() => setShowModal(false)}>Cancel</button>
-              <button type="button" className="btn btn-gradient" style={{ flex: 2 }} onClick={addItem} disabled={!newName.trim() || uploading}>Add to Closet</button>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button type="button" className="tf2-btn tf2-btn-ghost" style={{ flex: 1 }} onClick={() => setShowModal(false)}>Cancel</button>
+              <button type="button" className="tf2-btn tf2-btn-primary" style={{ flex: 2 }} onClick={addItem} disabled={!newName.trim() || uploading}>Add to closet</button>
             </div>
           </div>
         </div>
       )}
-
-      {/* ── Mobile Right-Side Filter Slider Drawer ── */}
-      <div
-        className={`closet-drawer-backdrop${mobileFilterOpen ? " open" : ""}`}
-        onClick={() => setMobileFilterOpen(false)}
-      />
-      <div className={`closet-right-drawer${mobileFilterOpen ? " open" : ""}`}>
-        {/* Drawer Header */}
-        <div style={{ padding: "20px 18px 16px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div>
-            <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: "var(--text)" }}>Closet Filters</h3>
-            <p style={{ fontSize: 11, color: "var(--text-soft)", margin: "2px 0 0" }}>
-              {activeTab === "items" ? `${filtered.length} items available` : `${filteredLooks.length} looks available`}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setMobileFilterOpen(false)}
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "var(--text-soft)",
-              cursor: "pointer",
-              padding: 6,
-              display: "flex",
-              alignItems: "center"
-            }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Drawer Body */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "18px 16px" }}>
-          {activeTab === "items" ? (
-            <div>
-              <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--muted)", marginBottom: 10 }}>
-                Categories
-              </p>
-              <button
-                type="button"
-                className={`sidebar-link${activeCategory === "all" ? " active" : ""}`}
-                onClick={() => { setActiveCategory("all"); setMobileFilterOpen(false); }}
-                style={{ width: "100%", marginBottom: 6 }}
-              >
-                <span className="sidebar-icon" style={{ display: "flex", alignItems: "center" }}><CategoryIcon id="all" /></span>
-                All Items
-                <span className="sidebar-count">{items.length}</span>
-              </button>
-
-              {CATEGORY_GROUPS.map(group => (
-                <div key={group} style={{ marginTop: 14 }}>
-                  <p className="sidebar-section-label" style={{ marginBottom: 6 }}>{group}</p>
-                  {CATEGORIES.filter(c => c.group === group).map(cat => (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      className={`sidebar-link${activeCategory === cat.id ? " active" : ""}`}
-                      onClick={() => { setActiveCategory(cat.id as Category); setMobileFilterOpen(false); }}
-                      style={{ width: "100%", marginBottom: 4 }}
-                    >
-                      <span className="sidebar-icon" style={{ display: "flex", alignItems: "center" }}><CategoryIcon id={cat.id} /></span>
-                      {cat.label}
-                      <span className="sidebar-count">{countForCat(cat.id as Category)}</span>
-                    </button>
-                  ))}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div>
-              <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--muted)", marginBottom: 12 }}>
-                Filter By Occasion
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {LOOK_FILTERS.map(f => (
-                  <button
-                    key={f.id}
-                    type="button"
-                    className={`sidebar-link${lookFilter === f.id ? " active" : ""}`}
-                    onClick={() => { setLookFilter(f.id); setMobileFilterOpen(false); }}
-                    style={{ width: "100%" }}
-                  >
-                    <span className="sidebar-icon" style={{ display: "flex", alignItems: "center" }}><OccasionIcon id={f.id} /></span>
-                    {f.label}
-                    {f.id !== "all" && <span className="sidebar-count">{looks.filter(l => l.occasion === f.id).length}</span>}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Drawer Footer */}
-        <div style={{ padding: "14px 16px", borderTop: "1px solid var(--border)", display: "flex", gap: 8 }}>
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm"
-            onClick={() => {
-              if (activeTab === "items") setActiveCategory("all");
-              else setLookFilter("all");
-              setMobileFilterOpen(false);
-            }}
-            style={{ flex: 1 }}
-          >
-            Reset
-          </button>
-          <button
-            type="button"
-            className="btn btn-gradient btn-sm"
-            onClick={() => setMobileFilterOpen(false)}
-            style={{ flex: 2 }}
-          >
-            Show Results
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

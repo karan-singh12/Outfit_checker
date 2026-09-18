@@ -87,7 +87,7 @@ export default function OutfitPollCard({
                 width: 26,
                 height: 26,
                 borderRadius: "50%",
-                background: "linear-gradient(135deg, #00c98d, #0ea5e9)",
+                background: "var(--purple)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -109,7 +109,7 @@ export default function OutfitPollCard({
 
         <span
           className="glass-pill"
-          style={{ fontSize: 10.5, borderColor: "rgba(14, 165, 233, 0.3)", color: "#0ea5e9" }}
+          style={{ fontSize: 10.5, borderColor: "rgba(var(--purple-rgb), 0.3)", color: "var(--purple)" }}
         >
           {type === "duel" ? "Look Duel" : "Style Verdict"}
         </span>
@@ -132,8 +132,8 @@ export default function OutfitPollCard({
                   cursor: "pointer",
                   padding: 8,
                   borderRadius: "var(--r-md)",
-                  background: isSelected ? "rgba(0, 201, 141, 0.08)" : "rgba(255, 255, 255, 0.02)",
-                  border: isSelected ? "1.5px solid #00c98d" : "1px solid rgba(255, 255, 255, 0.08)",
+                  background: isSelected ? "rgba(var(--purple-rgb), 0.08)" : "rgba(255, 255, 255, 0.02)",
+                  border: isSelected ? "1.5px solid var(--purple)" : "1px solid rgba(255, 255, 255, 0.08)",
                   transition: "all 0.2s ease",
                 }}
               >
@@ -159,7 +159,7 @@ export default function OutfitPollCard({
                           position: "absolute",
                           top: 8,
                           right: 8,
-                          background: "#00c98d",
+                          background: "var(--purple)",
                           color: "#fff",
                           borderRadius: 99,
                           padding: "2px 8px",
@@ -176,7 +176,7 @@ export default function OutfitPollCard({
 
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text)" }}>{opt.label}</span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: isSelected ? "#00c98d" : "var(--text-soft)" }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: isSelected ? "var(--purple)" : "var(--text-soft)" }}>
                     {percent}%
                   </span>
                 </div>
@@ -187,7 +187,7 @@ export default function OutfitPollCard({
                     style={{
                       width: `${percent}%`,
                       height: "100%",
-                      background: isSelected ? "linear-gradient(90deg, #00c98d, #0ea5e9)" : "rgba(255,255,255,0.3)",
+                      background: isSelected ? "var(--purple)" : "rgba(255,255,255,0.3)",
                       transition: "width 0.4s ease",
                     }}
                   />
@@ -219,19 +219,19 @@ export default function OutfitPollCard({
                   style={{
                     width: `${percent}%`,
                     background: isSelected
-                      ? "linear-gradient(90deg, rgba(0, 201, 141, 0.28), rgba(14, 165, 233, 0.35))"
+                      ? "rgba(var(--purple-rgb), 0.3)"
                       : "rgba(255, 255, 255, 0.08)",
-                    borderRightColor: isSelected ? "#00c98d" : "rgba(255, 255, 255, 0.2)",
+                    borderRightColor: isSelected ? "var(--purple)" : "rgba(255, 255, 255, 0.2)",
                   }}
                 />
                 <div className="poll-bar-content">
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     {isSelected && (
-                      <span style={{ color: "#00c98d", fontSize: 12 }}>●</span>
+                      <span style={{ color: "var(--purple)", fontSize: 12 }}>●</span>
                     )}
                     <span>{opt.label}</span>
                   </div>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: isSelected ? "#00c98d" : "var(--text-soft)" }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: isSelected ? "var(--purple)" : "var(--text-soft)" }}>
                     {percent}% ({opt.votes})
                   </span>
                 </div>

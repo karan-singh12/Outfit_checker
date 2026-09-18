@@ -92,13 +92,13 @@ export default function RentBuyToggle({
               style={{
                 fontSize: 10.5,
                 fontWeight: 600,
-                color: "#00c98d",
+                color: "var(--purple)",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 4,
               }}
             >
-              <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#00c98d" }} />
+              <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--purple)" }} />
               Save {savingsPercent}% (₹{savingsAmount.toLocaleString("en-IN")}) for {rentalDays}-day event
             </span>
           ) : (
@@ -146,11 +146,11 @@ export default function RentBuyToggle({
             </div>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <span>Rental ({rentalDays} days):</span>
-              <strong style={{ color: "#00c98d" }}>₹{calculatedRentalPrice.toLocaleString("en-IN")}</strong>
+              <strong style={{ color: "var(--purple)" }}>₹{calculatedRentalPrice.toLocaleString("en-IN")}</strong>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 4, borderTop: "1px solid var(--border)" }}>
               <span>Instant Event Savings:</span>
-              <strong style={{ color: "#00c98d" }}>₹{savingsAmount.toLocaleString("en-IN")} ({savingsPercent}%)</strong>
+              <strong style={{ color: "var(--purple)" }}>₹{savingsAmount.toLocaleString("en-IN")} ({savingsPercent}%)</strong>
             </div>
           </div>
 

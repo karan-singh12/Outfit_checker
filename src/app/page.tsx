@@ -2,12 +2,6 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import dynamic from "next/dynamic";
-
-const FlowWave = dynamic(
-  () => import("@/components/FlowWave").then((mod) => mod.FlowWave),
-  { ssr: false }
-);
 
 interface GarmentDemo {
   id: string;
@@ -113,60 +107,39 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="nf-page">
-      {/* ─── 3D Flow Wave Canvas Background ────────────────────────── */}
-      <FlowWave />
+    <div className="tf2-page">
 
       {/* ─── Hero Section ─────────────────────────────────────────── */}
-      <section className="nf-hero" style={{ minHeight: "auto", paddingBottom: 60 }}>
-        <div className="nf-hero-glow nf-hero-glow-1" />
-        <div className="nf-hero-glow nf-hero-glow-2" />
+      <section className="tf2-hero" style={{ paddingTop: 40 }}>
+        <div className="tf2-hero-glow" />
 
-        {/* Eyebrow Pill */}
-        <div className="tf-badge-pill">
-          <span className="tf-pulse-dot" />
-          Threadflank 2.0 · Neural Virtual Dressing Room &amp; Wardrobe OS
-        </div>
-
-        {/* Headline */}
-        <h1 className="tf-hero-title">
-          Your personal virtual dressing room,<br />
-          <span className="tf-gradient-text">engineered by AI.</span>
-        </h1>
-
-        {/* Subhead */}
-        <p className="tf-hero-lead">
-          Upload one selfie or build an AI digital twin. Drape real garments from Myntra, Zara, ASOS, or any store directly onto your body with true fabric physics, zero mannequins, and zero sizing anxiety.
-        </p>
-
-        {/* Primary CTAs */}
-        <div className="nf-cta-row">
-          <Link href="/setup" className="btn-nf-primary" style={{ padding: "14px 28px", fontSize: 15, borderRadius: 12 }}>
-            Start Dressing Free
-            <span className="nf-kbd">S</span>
-          </Link>
-          <Link href="/studio" className="btn-nf-ghost" style={{ padding: "14px 26px", fontSize: 15, borderRadius: 12 }}>
-            Explore Live Studio
-            <span className="nf-kbd nf-kbd-ghost">D</span>
-          </Link>
-        </div>
-
-        {/* Trust Metric Strip */}
-        <div className="tf-hero-metrics">
-          <div className="tf-metric-item">
-            <span className="tf-metric-val">185,000+</span> Outfits Draped
+        <div className="tf2-hero-grid" style={{ marginBottom: 48 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 24, maxWidth: 520 }}>
+            <span className="tf2-eyebrow">AI Virtual Dressing Room</span>
+            <h1 className="tf2-hero-title">
+              Try it on.<br />Before you own it.
+            </h1>
+            <p className="tf2-hero-lead">
+              Paste a link from any store. See it drape on your own likeness — real fabric, real fit, no guessing your size twice.
+            </p>
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              <Link href="/setup" className="tf2-btn tf2-btn-primary">Create your twin</Link>
+              <Link href="/studio" className="tf2-btn tf2-btn-ghost">Watch it work</Link>
+            </div>
+            <p style={{ margin: 0, fontSize: 13, color: "var(--tf-ink-faint)" }}>Trusted by 80,000+ shoppers who stopped over-ordering sizes.</p>
           </div>
-          <span style={{ color: "var(--muted)", opacity: 0.6 }}>•</span>
-          <div className="tf-metric-item">
-            <span className="tf-metric-val">38%</span> Return Rate Reduction
-          </div>
-          <span style={{ color: "var(--muted)", opacity: 0.6 }}>•</span>
-          <div className="tf-metric-item">
-            <span className="tf-metric-val">4.9 / 5</span> Stylist Trust Index
-          </div>
-          <span style={{ color: "var(--muted)", opacity: 0.6 }}>•</span>
-          <div className="tf-metric-item">
-            <span className="tf-metric-val">28</span> Skin Tone Calibrations
+
+          <div className="tf2-hero-photo">
+            <img src="/images/hero-tryon-demo.jpg" alt="AI try-on preview" />
+            <div className="tf2-hero-photo-badge">
+              <div>
+                <strong>Wool Blazer, Zara</strong>
+                <span>Fitted on your twin in 12s</span>
+              </div>
+              <span className="tf2-hero-check">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--tf-surface)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+            </div>
           </div>
         </div>
 
@@ -174,18 +147,18 @@ export default function LandingPage() {
         <div className="tf-sandbox-wrap">
           {/* Header Bar */}
           <div className="tf-sandbox-header">
-            <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text)", display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "var(--tf-ink)", display: "flex", alignItems: "center", gap: 8 }}>
               <span className="tf-pulse-dot" />
               Live Preview
             </span>
-            <span style={{ fontSize: 12, color: "var(--muted)" }}>
+            <span style={{ fontSize: 12, color: "var(--tf-ink-faint)" }}>
               Pick a look below to see it drape instantly
             </span>
           </div>
 
           {/* Garment Selector Tabs */}
           <div className="tf-garment-pills">
-            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.08em", paddingRight: 6 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--tf-ink-faint)", textTransform: "uppercase", letterSpacing: "0.08em", paddingRight: 6 }}>
               Select Look:
             </span>
             {DEMO_GARMENTS.map((g, idx) => (
@@ -211,8 +184,8 @@ export default function LandingPage() {
                 <img src="/images/female_avatar.png" alt="User Biometric Model" />
               </div>
               <div style={{ marginTop: 12, textAlign: "center" }}>
-                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>Ananya S. (Your Twin)</p>
-                <p style={{ fontSize: 11, color: "var(--muted)", fontFamily: "monospace" }}>168 cm · Tone #4 · True Proportions</p>
+                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--tf-ink)" }}>Ananya S. (Your Twin)</p>
+                <p style={{ fontSize: 11, color: "var(--tf-ink-faint)", fontFamily: "monospace" }}>168 cm · Tone #4 · True Proportions</p>
               </div>
             </div>
 
@@ -230,8 +203,8 @@ export default function LandingPage() {
                 <img src={currentGarment.garmentImg} alt={currentGarment.name} />
               </div>
               <div style={{ marginTop: 12, textAlign: "center" }}>
-                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>{currentGarment.name}</p>
-                <p style={{ fontSize: 11, color: "var(--purple)", fontWeight: 600 }}>{currentGarment.brand} · {currentGarment.price}</p>
+                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--tf-ink)" }}>{currentGarment.name}</p>
+                <p style={{ fontSize: 11, color: "var(--tf-accent)", fontWeight: 600 }}>{currentGarment.brand} · {currentGarment.price}</p>
               </div>
             </div>
 
@@ -247,13 +220,13 @@ export default function LandingPage() {
               <span className="tf-preview-tag success">03 · Photorealistic AI Drape</span>
               <div className="tf-preview-img-box" style={{ height: 260 }}>
                 <img src={currentGarment.resultImg} alt="AI Drape Result" style={{ objectFit: "cover" }} />
-                <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,201,141,0.9)", color: "#000", fontWeight: 800, fontSize: 10, padding: "3px 8px", borderRadius: 6 }}>
+                <div style={{ position: "absolute", top: 10, right: 10, background: "var(--tf-accent)", color: "#fff", fontWeight: 800, fontSize: 10, padding: "3px 8px", borderRadius: 6 }}>
                   {currentGarment.matchScore} FIT MATCH
                 </div>
               </div>
               <div style={{ marginTop: 12, textAlign: "center", width: "100%" }}>
-                <p style={{ fontSize: 13.5, fontWeight: 700, color: "var(--text)" }}>Rendered on your real body</p>
-                <p style={{ fontSize: 11, color: "var(--text-soft)", marginTop: 2 }}>{currentGarment.specNotes}</p>
+                <p style={{ fontSize: 13.5, fontWeight: 700, color: "var(--tf-ink)" }}>Rendered on your real body</p>
+                <p style={{ fontSize: 11, color: "var(--tf-ink-soft)", marginTop: 2 }}>{currentGarment.specNotes}</p>
               </div>
             </div>
           </div>
@@ -261,15 +234,15 @@ export default function LandingPage() {
           {/* Sandbox Telemetry Footer */}
           <div className="tf-sandbox-telemetry">
             <div className="tf-telemetry-item">
-              <span style={{ color: "var(--purple)" }}>✓</span>
+              <span style={{ color: "var(--tf-accent)" }}>✓</span>
               <span>Fabric Physics: <strong>{currentGarment.fabric}</strong></span>
             </div>
             <div className="tf-telemetry-item">
-              <span style={{ color: "var(--purple)" }}>✓</span>
+              <span style={{ color: "var(--tf-accent)" }}>✓</span>
               <span>Pose &amp; Shadow: <strong>Natural Ambient Occlusion</strong></span>
             </div>
             <div className="tf-telemetry-item">
-              <Link href="/studio" style={{ color: "var(--purple)", fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
+              <Link href="/studio" style={{ color: "var(--tf-accent)", fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
                 Open Studio with this piece →
               </Link>
             </div>
@@ -278,7 +251,7 @@ export default function LandingPage() {
 
         {/* ─── Live URL Scraper Search Bar ─────────────────────────── */}
         <form onSubmit={handleUrlSubmit} className="tf-url-search-wrap">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" strokeWidth="2" style={{ flexShrink: 0 }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--tf-accent)" strokeWidth="2" style={{ flexShrink: 0 }}>
             <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
             <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
           </svg>
@@ -304,23 +277,21 @@ export default function LandingPage() {
         style={{
           position: "relative",
           zIndex: 2,
-          backdropFilter: "blur(28px) saturate(180%)",
-          WebkitBackdropFilter: "blur(28px) saturate(180%)",
-          background: "linear-gradient(180deg, color-mix(in srgb, var(--bg) 60%, transparent) 0%, color-mix(in srgb, var(--bg) 92%, transparent) 14%, var(--bg) 100%)",
-          borderTop: "1px solid var(--card-border)",
+          background: "var(--tf-ivory)",
+          borderTop: "1px solid var(--tf-hairline)",
         }}
       >
         <div className="tf-pro-container">
 
           {/* ─── Universal Store Ecosystem Strip ───────────────────── */}
           <div className="tf-stores-strip">
-            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.12em", marginRight: 8 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--tf-ink-faint)", textTransform: "uppercase", letterSpacing: "0.12em", marginRight: 8 }}>
               Compatible Stores:
             </span>
             {["Zara", "Myntra", "ASOS", "Amazon Fashion", "H&M", "Nykaa", "Mango", "Massimo Dutti", "Net-a-Porter", "Urbanic"].map((s) => (
               <span key={s} className="tf-store-pill">{s}</span>
             ))}
-            <span className="tf-store-pill" style={{ borderColor: "rgba(var(--purple-rgb),0.5)", color: "var(--purple)", background: "rgba(var(--purple-rgb),0.06)" }}>
+            <span className="tf-store-pill" style={{ borderColor: "color-mix(in oklch, var(--tf-accent) 50%, transparent)", color: "var(--tf-accent)", background: "color-mix(in oklch, var(--tf-accent) 6%, transparent)" }}>
               + Any Store URL or Screenshot
             </span>
           </div>
@@ -329,10 +300,10 @@ export default function LandingPage() {
           <section style={{ padding: "40px 0 70px" }}>
             <div style={{ textAlign: "center", marginBottom: 44 }}>
               <span className="tf-badge-pill">Autonomous Architecture</span>
-              <h2 style={{ fontSize: "clamp(28px, 4vw, 42px)", fontWeight: 800, color: "var(--text)", lineHeight: 1.2 }}>
+              <h2 style={{ fontSize: "clamp(28px, 4vw, 42px)", fontWeight: 800, color: "var(--tf-ink)", lineHeight: 1.2 }}>
                 How Threadflank Transforms <span className="tf-gradient-text">Virtual Shopping</span>
               </h2>
-              <p style={{ color: "var(--text-soft)", fontSize: 16, maxWidth: 580, margin: "12px auto 0", lineHeight: 1.65 }}>
+              <p style={{ color: "var(--tf-ink-soft)", fontSize: 16, maxWidth: 580, margin: "12px auto 0", lineHeight: 1.65 }}>
                 An end-to-end computer vision and latent diffusion pipeline engineered to eliminate sizing friction and returns.
               </p>
             </div>
@@ -403,7 +374,7 @@ export default function LandingPage() {
             <div className="tf-spotlight-row">
               <div className="tf-spotlight-text">
                 <span className="tf-spotlight-eyebrow">
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--purple)" }} />
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--tf-accent)" }} />
                   Photorealistic Drape Engine
                 </span>
                 <h3 className="tf-spotlight-title">
@@ -436,7 +407,7 @@ export default function LandingPage() {
                 <img src="/images/feature-tryon.jpg" alt="AI Virtual Try-On Studio" className="tf-spotlight-img" />
                 <div className="tf-media-badge">
                   <span className="font-mono">Realtime Diffusion · Multi-Layer Layering</span>
-                  <span style={{ color: "var(--purple)", fontWeight: 700 }}>99.2% Accuracy</span>
+                  <span style={{ color: "var(--tf-accent)", fontWeight: 700 }}>99.2% Accuracy</span>
                 </div>
               </div>
             </div>
@@ -444,13 +415,13 @@ export default function LandingPage() {
             {/* Spotlight 2: Autonomous AI Occasion Planner */}
             <div className="tf-spotlight-row reverse">
               <div className="tf-spotlight-text">
-                <span className="tf-spotlight-eyebrow" style={{ color: "var(--pink)" }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--pink)" }} />
+                <span className="tf-spotlight-eyebrow" style={{ color: "var(--tf-accent)" }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--tf-accent)" }} />
                   Contextual AI Stylist
                 </span>
                 <h3 className="tf-spotlight-title">
                   Smart Occasion Planner &amp; <br />
-                  <span style={{ background: "linear-gradient(135deg, #0ea5e9, #8b5cf6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                  <span style={{ color: "var(--tf-accent)" }}>
                     Wardrobe Gap Detection
                   </span>
                 </h3>
@@ -459,15 +430,15 @@ export default function LandingPage() {
                 </p>
                 <div className="tf-checklist">
                   <div className="tf-check-item">
-                    <span className="tf-check-icon" style={{ background: "rgba(14,165,233,0.15)", color: "var(--pink)" }}>✓</span>
+                    <span className="tf-check-icon" style={{ background: "color-mix(in oklch, var(--tf-accent) 12%, transparent)", color: "var(--tf-accent)" }}>✓</span>
                     <span><strong>Context Intake:</strong> Factors in venue, dress code, local weather, and travel baggage constraints.</span>
                   </div>
                   <div className="tf-check-item">
-                    <span className="tf-check-icon" style={{ background: "rgba(14,165,233,0.15)", color: "var(--pink)" }}>✓</span>
+                    <span className="tf-check-icon" style={{ background: "color-mix(in oklch, var(--tf-accent) 12%, transparent)", color: "var(--tf-accent)" }}>✓</span>
                     <span><strong>Shop Missing Gaps:</strong> Highlights exact missing items (e.g. clutch or heels) with direct buy links.</span>
                   </div>
                   <div className="tf-check-item">
-                    <span className="tf-check-icon" style={{ background: "rgba(14,165,233,0.15)", color: "var(--pink)" }}>✓</span>
+                    <span className="tf-check-icon" style={{ background: "color-mix(in oklch, var(--tf-accent) 12%, transparent)", color: "var(--tf-accent)" }}>✓</span>
                     <span><strong>Confidence Rating:</strong> Every recommended combination is scored for dress code compliance.</span>
                   </div>
                 </div>
@@ -480,7 +451,7 @@ export default function LandingPage() {
                 <img src="/images/look_office.png" alt="Occasion Planner Showcase" className="tf-spotlight-img" />
                 <div className="tf-media-badge">
                   <span className="font-mono">Occasion: Business Boardroom · Formal</span>
-                  <span style={{ color: "var(--pink)", fontWeight: 700 }}>Confidence: 96%</span>
+                  <span style={{ color: "var(--tf-accent)", fontWeight: 700 }}>Confidence: 96%</span>
                 </div>
               </div>
             </div>
@@ -488,13 +459,13 @@ export default function LandingPage() {
             {/* Spotlight 3: Digital Wardrobe OS */}
             <div className="tf-spotlight-row">
               <div className="tf-spotlight-text">
-                <span className="tf-spotlight-eyebrow" style={{ color: "#f59e0b" }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#f59e0b" }} />
+                <span className="tf-spotlight-eyebrow" style={{ color: "var(--tf-accent)" }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--tf-accent)" }} />
                   Wardrobe Operating System
                 </span>
                 <h3 className="tf-spotlight-title">
                   Catalogue your closet. <br />
-                  <span style={{ background: "linear-gradient(135deg, #f59e0b, #ef4444)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                  <span style={{ color: "var(--tf-accent)" }}>
                     Track Cost-Per-Wear.
                   </span>
                 </h3>
@@ -503,19 +474,19 @@ export default function LandingPage() {
                 </p>
                 <div className="tf-checklist">
                   <div className="tf-check-item">
-                    <span className="tf-check-icon" style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b" }}>✓</span>
+                    <span className="tf-check-icon" style={{ background: "color-mix(in oklch, var(--tf-accent) 12%, transparent)", color: "var(--tf-accent)" }}>✓</span>
                     <span><strong>9 Categories:</strong> Tops, Bottoms, Dresses, Outerwear, Shoes, Bags, Jewelry, Eyewear, Makeup.</span>
                   </div>
                   <div className="tf-check-item">
-                    <span className="tf-check-icon" style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b" }}>✓</span>
+                    <span className="tf-check-icon" style={{ background: "color-mix(in oklch, var(--tf-accent) 12%, transparent)", color: "var(--tf-accent)" }}>✓</span>
                     <span><strong>Cost-Per-Wear Intelligence:</strong> Track real financial return on your luxury and everyday pieces.</span>
                   </div>
                   <div className="tf-check-item">
-                    <span className="tf-check-icon" style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b" }}>✓</span>
+                    <span className="tf-check-icon" style={{ background: "color-mix(in oklch, var(--tf-accent) 12%, transparent)", color: "var(--tf-accent)" }}>✓</span>
                     <span><strong>Saved Looks Archive:</strong> Revisit your best outfit formulas anytime with 1-tap re-try.</span>
                   </div>
                 </div>
-                <Link href="/closet" className="btn-nf-primary" style={{ borderRadius: 10, padding: "10px 22px", background: "#f59e0b", borderColor: "rgba(245,158,11,0.4)" }}>
+                <Link href="/closet" className="btn-nf-primary" style={{ borderRadius: 10, padding: "10px 22px" }}>
                   Explore Digital Closet →
                 </Link>
               </div>
@@ -524,7 +495,7 @@ export default function LandingPage() {
                 <img src="/images/feature-wardrobe.jpg" alt="Digital Closet Showcase" className="tf-spotlight-img" />
                 <div className="tf-media-badge">
                   <span className="font-mono">Closet Sync: 48 Owned Items Active</span>
-                  <span style={{ color: "#f59e0b", fontWeight: 700 }}>Avg CPW: ₹180</span>
+                  <span style={{ color: "var(--tf-accent)", fontWeight: 700 }}>Avg CPW: ₹180</span>
                 </div>
               </div>
             </div>
@@ -532,13 +503,13 @@ export default function LandingPage() {
             {/* Spotlight 4: Discover Feed & Social Second Opinion */}
             <div className="tf-spotlight-row reverse">
               <div className="tf-spotlight-text">
-                <span className="tf-spotlight-eyebrow" style={{ color: "#ec4899" }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#ec4899" }} />
+                <span className="tf-spotlight-eyebrow" style={{ color: "var(--tf-accent)" }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--tf-accent)" }} />
                   Social Fashion Network
                 </span>
                 <h3 className="tf-spotlight-title">
                   Editorial Drops &amp; <br />
-                  <span style={{ background: "linear-gradient(135deg, #ec4899, #8b5cf6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                  <span style={{ color: "var(--tf-accent)" }}>
                     Instant Second Opinion
                   </span>
                 </h3>
@@ -547,19 +518,19 @@ export default function LandingPage() {
                 </p>
                 <div className="tf-checklist">
                   <div className="tf-check-item">
-                    <span className="tf-check-icon" style={{ background: "rgba(236,72,153,0.15)", color: "#ec4899" }}>✓</span>
+                    <span className="tf-check-icon" style={{ background: "color-mix(in oklch, var(--tf-accent) 12%, transparent)", color: "var(--tf-accent)" }}>✓</span>
                     <span><strong>1-Tap "Drape This":</strong> Directly load editorial runway drops onto your digital twin.</span>
                   </div>
                   <div className="tf-check-item">
-                    <span className="tf-check-icon" style={{ background: "rgba(236,72,153,0.15)", color: "#ec4899" }}>✓</span>
+                    <span className="tf-check-icon" style={{ background: "color-mix(in oklch, var(--tf-accent) 12%, transparent)", color: "var(--tf-accent)" }}>✓</span>
                     <span><strong>Real-Time Messaging:</strong> Private styling chat rooms powered by WebSockets.</span>
                   </div>
                   <div className="tf-check-item">
-                    <span className="tf-check-icon" style={{ background: "rgba(236,72,153,0.15)", color: "#ec4899" }}>✓</span>
+                    <span className="tf-check-icon" style={{ background: "color-mix(in oklch, var(--tf-accent) 12%, transparent)", color: "var(--tf-accent)" }}>✓</span>
                     <span><strong>Interactive Polls:</strong> Friends can vote "Yes, Buy It" or suggest a matching jacket.</span>
                   </div>
                 </div>
-                <Link href="/discover" className="btn-nf-primary" style={{ borderRadius: 10, padding: "10px 22px", background: "#ec4899", borderColor: "rgba(236,72,153,0.4)" }}>
+                <Link href="/discover" className="btn-nf-primary" style={{ borderRadius: 10, padding: "10px 22px" }}>
                   Browse Discover Feed →
                 </Link>
               </div>
@@ -568,7 +539,7 @@ export default function LandingPage() {
                 <img src="/images/feature-discover.jpg" alt="Editorial Discover Feed" className="tf-spotlight-img" />
                 <div className="tf-media-badge">
                   <span className="font-mono">Live Drops: Zara, H&amp;M Studio, Mango</span>
-                  <span style={{ color: "#ec4899", fontWeight: 700 }}>1-Tap Drape Ready</span>
+                  <span style={{ color: "var(--tf-accent)", fontWeight: 700 }}>1-Tap Drape Ready</span>
                 </div>
               </div>
             </div>
@@ -577,16 +548,15 @@ export default function LandingPage() {
 
           {/* ─── Enterprise & D2C Storefront Widget Section ────────── */}
           <section className="tf-d2c-box">
-            <div style={{ position: "absolute", top: 0, right: 0, width: 300, height: 300, background: "radial-gradient(circle, rgba(var(--purple-rgb),0.15) 0%, transparent 70%)", pointerEvents: "none" }} />
             <div className="tf-d2c-grid">
               <div>
                 <span className="tf-badge-pill">
                   For Fashion Brands &amp; D2C Merchants
                 </span>
-                <h3 style={{ fontSize: "clamp(26px, 3.5vw, 38px)", fontWeight: 800, color: "var(--text)", lineHeight: 1.2, margin: "14px 0" }}>
+                <h3 style={{ fontSize: "clamp(26px, 3.5vw, 38px)", fontWeight: 800, color: "var(--tf-ink)", lineHeight: 1.2, margin: "14px 0" }}>
                   Embed Threadflank on your storefront with <span className="tf-gradient-text">2 lines of code</span>.
                 </h3>
-                <p style={{ color: "var(--text-soft)", fontSize: 15, lineHeight: 1.7, marginBottom: 24 }}>
+                <p style={{ color: "var(--tf-ink-soft)", fontSize: 15, lineHeight: 1.7, marginBottom: 24 }}>
                   Reverse logistics and sizing returns cost fashion retailers millions. Threadflank's lightweight widget gives your shoppers instant virtual try-on on product pages, slashing returns by over 34% while lifting conversions.
                 </p>
 
@@ -617,18 +587,18 @@ export default function LandingPage() {
 
               {/* Integration Card */}
               <div className="tf-code-window" style={{ padding: 24 }}>
-                <p style={{ fontSize: 11, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 16 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: "var(--tf-ink-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 16 }}>
                   Works with your stack
                 </p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   {["Shopify", "WooCommerce", "Custom / Headless Storefront"].map((platform) => (
-                    <div key={platform} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: "var(--bg-soft)", border: "1px solid var(--card-border)", borderRadius: "var(--r-md)" }}>
-                      <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--purple)", flexShrink: 0 }} />
-                      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>{platform}</span>
+                    <div key={platform} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: "var(--tf-surface)", border: "1px solid var(--tf-hairline)", borderRadius: "var(--r-md)" }}>
+                      <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--tf-accent)", flexShrink: 0 }} />
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--tf-ink)" }}>{platform}</span>
                     </div>
                   ))}
                 </div>
-                <p style={{ fontSize: 12, color: "var(--text-soft)", marginTop: 16, lineHeight: 1.6 }}>
+                <p style={{ fontSize: 12, color: "var(--tf-ink-soft)", marginTop: 16, lineHeight: 1.6 }}>
                   Our team handles setup — no engineering lift required on your end. Talk to us to get a widget key.
                 </p>
                 <Link href="/pricing" className="btn-nf-ghost" style={{ marginTop: 14, borderRadius: 10, padding: "10px 20px", display: "inline-flex" }}>
@@ -642,10 +612,10 @@ export default function LandingPage() {
           <section style={{ padding: "40px 0 60px" }}>
             <div style={{ textAlign: "center", marginBottom: 36 }}>
               <span className="tf-badge-pill">The Competitive Advantage</span>
-              <h2 style={{ fontSize: "clamp(26px, 3.6vw, 40px)", fontWeight: 800, color: "var(--text)" }}>
+              <h2 style={{ fontSize: "clamp(26px, 3.6vw, 40px)", fontWeight: 800, color: "var(--tf-ink)" }}>
                 Why Threadflank Is <span className="tf-gradient-text">Leagues Ahead</span>
               </h2>
-              <p style={{ color: "var(--text-soft)", fontSize: 15, maxWidth: 540, margin: "10px auto 0" }}>
+              <p style={{ color: "var(--tf-ink-soft)", fontSize: 15, maxWidth: 540, margin: "10px auto 0" }}>
                 A side-by-side comparison with traditional e-commerce and legacy 3D mannequin apps.
               </p>
             </div>
@@ -663,51 +633,51 @@ export default function LandingPage() {
                 <tbody>
                   <tr>
                     <td><strong>Facial &amp; Body Realism</strong></td>
-                    <td className="tf-col-highlight" style={{ color: "var(--purple)" }}>
+                    <td className="tf-col-highlight" style={{ color: "var(--tf-accent)" }}>
                       ✓ 100% Exact Face, Skin Tone &amp; Body Lock
                     </td>
-                    <td style={{ color: "var(--muted)" }}>✗ Static model mannequin only</td>
-                    <td style={{ color: "var(--muted)" }}>✗ Generic cartoonish 3D meshes</td>
+                    <td style={{ color: "var(--tf-ink-faint)" }}>✗ Static model mannequin only</td>
+                    <td style={{ color: "var(--tf-ink-faint)" }}>✗ Generic cartoonish 3D meshes</td>
                   </tr>
                   <tr>
                     <td><strong>Store Ingestion &amp; Scraping</strong></td>
-                    <td className="tf-col-highlight" style={{ color: "var(--purple)" }}>
+                    <td className="tf-col-highlight" style={{ color: "var(--tf-accent)" }}>
                       ✓ Any Store URL (Zara, Myntra, ASOS, etc.)
                     </td>
-                    <td style={{ color: "var(--muted)" }}>✗ Fragmented across different apps</td>
-                    <td style={{ color: "var(--muted)" }}>✗ Restricted to locked partner catalogs</td>
+                    <td style={{ color: "var(--tf-ink-faint)" }}>✗ Fragmented across different apps</td>
+                    <td style={{ color: "var(--tf-ink-faint)" }}>✗ Restricted to locked partner catalogs</td>
                   </tr>
                   <tr>
                     <td><strong>Multi-Piece Head-to-Toe Styling</strong></td>
-                    <td className="tf-col-highlight" style={{ color: "var(--purple)" }}>
+                    <td className="tf-col-highlight" style={{ color: "var(--tf-accent)" }}>
                       ✓ Layer 9 slots: Garments, Shoes, Bags, Makeup
                     </td>
-                    <td style={{ color: "var(--muted)" }}>✗ Separate product tabs</td>
-                    <td style={{ color: "var(--muted)" }}>✗ Single garment swap only</td>
+                    <td style={{ color: "var(--tf-ink-faint)" }}>✗ Separate product tabs</td>
+                    <td style={{ color: "var(--tf-ink-faint)" }}>✗ Single garment swap only</td>
                   </tr>
                   <tr>
                     <td><strong>Event &amp; Wardrobe Gap Detection</strong></td>
-                    <td className="tf-col-highlight" style={{ color: "var(--purple)" }}>
+                    <td className="tf-col-highlight" style={{ color: "var(--tf-accent)" }}>
                       ✓ Auto-matches owned closet + flags missing pieces
                     </td>
-                    <td style={{ color: "var(--muted)" }}>✗ None (manual guesswork)</td>
-                    <td style={{ color: "var(--muted)" }}>✗ None</td>
+                    <td style={{ color: "var(--tf-ink-faint)" }}>✗ None (manual guesswork)</td>
+                    <td style={{ color: "var(--tf-ink-faint)" }}>✗ None</td>
                   </tr>
                   <tr>
                     <td><strong>Social Feedback &amp; Polls</strong></td>
-                    <td className="tf-col-highlight" style={{ color: "var(--purple)" }}>
+                    <td className="tf-col-highlight" style={{ color: "var(--tf-accent)" }}>
                       ✓ Real-time styling chat &amp; WhatsApp cards
                     </td>
-                    <td style={{ color: "var(--muted)" }}>✗ Manual screenshots in WhatsApp</td>
-                    <td style={{ color: "var(--muted)" }}>✗ Static image downloads only</td>
+                    <td style={{ color: "var(--tf-ink-faint)" }}>✗ Manual screenshots in WhatsApp</td>
+                    <td style={{ color: "var(--tf-ink-faint)" }}>✗ Static image downloads only</td>
                   </tr>
                   <tr>
                     <td><strong>Privacy &amp; Biometric Security</strong></td>
-                    <td className="tf-col-highlight" style={{ color: "var(--purple)" }}>
+                    <td className="tf-col-highlight" style={{ color: "var(--tf-accent)" }}>
                       ✓ End-to-end encrypted; 1-click photo deletion
                     </td>
-                    <td style={{ color: "var(--muted)" }}>— N/A</td>
-                    <td style={{ color: "var(--muted)" }}>✗ Often shared to third parties</td>
+                    <td style={{ color: "var(--tf-ink-faint)" }}>— N/A</td>
+                    <td style={{ color: "var(--tf-ink-faint)" }}>✗ Often shared to third parties</td>
                   </tr>
                 </tbody>
               </table>
@@ -718,7 +688,7 @@ export default function LandingPage() {
           <section style={{ padding: "40px 0 60px" }}>
             <div style={{ textAlign: "center", marginBottom: 36 }}>
               <span className="tf-badge-pill">Verified Reviews</span>
-              <h2 style={{ fontSize: "clamp(26px, 3.6vw, 40px)", fontWeight: 800, color: "var(--text)" }}>
+              <h2 style={{ fontSize: "clamp(26px, 3.6vw, 40px)", fontWeight: 800, color: "var(--tf-ink)" }}>
                 Trusted by <span className="tf-gradient-text">Over 80,000 Fashion Lovers</span>
               </h2>
             </div>
@@ -736,7 +706,7 @@ export default function LandingPage() {
                     <span className="tf-test-name">Rhea Kapoor</span>
                     <span className="tf-test-role">Product Lead · Bengaluru</span>
                   </div>
-                  <span style={{ marginLeft: "auto", fontSize: 11, padding: "2px 8px", borderRadius: 99, background: "rgba(var(--purple-rgb),0.1)", color: "var(--purple)", fontWeight: 600 }}>
+                  <span style={{ marginLeft: "auto", fontSize: 11, padding: "2px 8px", borderRadius: 99, background: "color-mix(in oklch, var(--tf-accent) 10%, transparent)", color: "var(--tf-accent)", fontWeight: 600 }}>
                     Verified Buyer
                   </span>
                 </div>
@@ -754,7 +724,7 @@ export default function LandingPage() {
                     <span className="tf-test-name">Pooja Mathur</span>
                     <span className="tf-test-role">Bridal Consultant · Mumbai</span>
                   </div>
-                  <span style={{ marginLeft: "auto", fontSize: 11, padding: "2px 8px", borderRadius: 99, background: "rgba(var(--purple-rgb),0.1)", color: "var(--purple)", fontWeight: 600 }}>
+                  <span style={{ marginLeft: "auto", fontSize: 11, padding: "2px 8px", borderRadius: 99, background: "color-mix(in oklch, var(--tf-accent) 10%, transparent)", color: "var(--tf-accent)", fontWeight: 600 }}>
                     Verified Stylist
                   </span>
                 </div>
@@ -772,7 +742,7 @@ export default function LandingPage() {
                     <span className="tf-test-name">Karan Verma</span>
                     <span className="tf-test-role">Fashion Editor · New Delhi</span>
                   </div>
-                  <span style={{ marginLeft: "auto", fontSize: 11, padding: "2px 8px", borderRadius: 99, background: "rgba(var(--purple-rgb),0.1)", color: "var(--purple)", fontWeight: 600 }}>
+                  <span style={{ marginLeft: "auto", fontSize: 11, padding: "2px 8px", borderRadius: 99, background: "color-mix(in oklch, var(--tf-accent) 10%, transparent)", color: "var(--tf-accent)", fontWeight: 600 }}>
                     Verified VIP
                   </span>
                 </div>
@@ -784,7 +754,7 @@ export default function LandingPage() {
           <section style={{ padding: "40px 0 60px" }}>
             <div style={{ textAlign: "center", marginBottom: 36 }}>
               <span className="tf-badge-pill">Common Inquiries</span>
-              <h2 style={{ fontSize: "clamp(26px, 3.6vw, 40px)", fontWeight: 800, color: "var(--text)" }}>
+              <h2 style={{ fontSize: "clamp(26px, 3.6vw, 40px)", fontWeight: 800, color: "var(--tf-ink)" }}>
                 Frequently Asked <span className="tf-gradient-text">Questions</span>
               </h2>
             </div>
@@ -825,14 +795,14 @@ export default function LandingPage() {
 
           {/* ─── High Conversion Pre-Footer Banner ──────────────────── */}
           <div className="tf-cta-banner">
-            <span className="tf-badge-pill" style={{ background: "rgba(var(--purple-rgb),0.12)" }}>
+            <span className="tf-badge-pill" style={{ background: "color-mix(in oklch, var(--tf-accent) 12%, transparent)" }}>
               Experience the Future of Dressing
             </span>
-            <h2 style={{ fontSize: "clamp(28px, 4.2vw, 46px)", fontWeight: 800, color: "var(--text)", lineHeight: 1.2, margin: "18px 0" }}>
+            <h2 style={{ fontSize: "clamp(28px, 4.2vw, 46px)", fontWeight: 800, color: "var(--tf-ink)", lineHeight: 1.2, margin: "18px 0" }}>
               Ready to see yourself in <br />
               <span className="tf-gradient-text">every outfit you've ever wanted?</span>
             </h2>
-            <p style={{ color: "var(--text-soft)", fontSize: 16, maxWidth: 540, margin: "0 auto 36px", lineHeight: 1.7 }}>
+            <p style={{ color: "var(--tf-ink-soft)", fontSize: 16, maxWidth: 540, margin: "0 auto 36px", lineHeight: 1.7 }}>
               Join over 80,000 smart shoppers dressing with certainty. Upload your selfie in 30 seconds and start draping from any store link right now.
             </p>
             <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
@@ -866,15 +836,15 @@ export default function LandingPage() {
               <div className="nf-footer-top">
                 <div className="nf-footer-brand">
                   <div className="nf-footer-logo">
-                    <div style={{ width: 32, height: 32, borderRadius: 8, overflow: "hidden", background: "var(--card)", border: "1px solid var(--card-border)", flexShrink: 0 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 8, overflow: "hidden", background: "var(--tf-surface)", border: "1px solid var(--tf-hairline)", flexShrink: 0 }}>
                       <img src="/images/logo.png" alt="Threadflank Logo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     </div>
-                    <span className="nf-footer-brand-name" style={{ background: "linear-gradient(135deg, #00c98d 0%, #0ea5e9 50%, #8b5cf6 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                    <span className="nf-footer-brand-name" style={{ color: "var(--tf-accent)" }}>
                       Threadflank<span style={{ WebkitTextFillColor: "transparent" }}>.</span>
                     </span>
                   </div>
                   <p className="nf-footer-tagline">Try anything. Wear everything.</p>
-                  <p style={{ fontSize: 12, color: "var(--muted)", maxWidth: 280, marginTop: 8 }}>
+                  <p style={{ fontSize: 12, color: "var(--tf-ink-faint)", maxWidth: 280, marginTop: 8 }}>
                     Next-generation AI virtual dressing room, personal wardrobe operating system, and fashion collaboration network.
                   </p>
                 </div>
@@ -924,10 +894,7 @@ export default function LandingPage() {
             <div
               className="nf-footer-watermark"
               style={{
-                background: "linear-gradient(135deg, #00c98d 0%, #0ea5e9 50%, #8b5cf6 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
+                color: "var(--tf-accent)",
                 opacity: 1
               }}
             >

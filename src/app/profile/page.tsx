@@ -251,7 +251,7 @@ export default function ProfilePage() {
               {user.email}
             </p>
 
-            <span className="mockup-tag" style={{ background: "rgba(0, 201, 141, 0.08)", color: "var(--purple)", fontWeight: "600", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", padding: "4px 10px", borderRadius: "100px", marginBottom: "24px" }}>
+            <span className="mockup-tag" style={{ background: "rgba(var(--purple-rgb), 0.08)", color: "var(--purple)", fontWeight: "600", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", padding: "4px 10px", borderRadius: "100px", marginBottom: "24px" }}>
               {user.role}
             </span>
 
@@ -505,7 +505,7 @@ export default function ProfilePage() {
                 <span style={{ fontSize: 16 }}>✨</span>
                 <h4 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "var(--text)" }}>Persistent Digital Twin</h4>
               </div>
-              <span className="glass-pill" style={{ color: "#00c98d", borderColor: "rgba(0, 201, 141, 0.3)" }}>
+              <span className="glass-pill" style={{ color: "var(--purple)", borderColor: "rgba(var(--purple-rgb), 0.3)" }}>
                 {savedTwin ? "Active & Synced" : "Default Model"}
               </span>
             </div>
@@ -698,12 +698,12 @@ export default function ProfilePage() {
           <div className="glass-panel-luxury specular-top" style={{ padding: "26px 22px", display: "flex", flexDirection: "column", gap: 14 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{ width: 22, height: 22, borderRadius: "50%", background: "#25D366", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12 }}>
+                <div style={{ width: 22, height: 22, borderRadius: "50%", background: "var(--purple)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12 }}>
                   WA
                 </div>
                 <h4 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "var(--text)" }}>WhatsApp Try-On Assistant</h4>
               </div>
-              <span className="glass-pill" style={{ color: user.phone ? "#25D366" : "var(--muted)", borderColor: user.phone ? "rgba(37, 211, 102, 0.3)" : "var(--border)" }}>
+              <span className="glass-pill" style={{ color: user.phone ? "var(--purple)" : "var(--muted)", borderColor: user.phone ? "rgba(var(--purple-rgb), 0.3)" : "var(--border)" }}>
                 {user.phone ? "Linked" : "Not Linked"}
               </span>
             </div>
@@ -712,10 +712,10 @@ export default function ProfilePage() {
               Send Zara, Myntra, or Amazon product links to our WhatsApp number and get an instant AI try-on on your twin.
             </p>
 
-            <div style={{ padding: "12px 14px", background: "rgba(37, 211, 102, 0.06)", borderRadius: "var(--r-sm)", border: "1px solid rgba(37, 211, 102, 0.2)", fontSize: 12, color: "var(--text)" }}>
+            <div style={{ padding: "12px 14px", background: "rgba(var(--purple-rgb), 0.06)", borderRadius: "var(--r-sm)", border: "1px solid rgba(var(--purple-rgb), 0.2)", fontSize: 12, color: "var(--text)" }}>
               {user.phone ? (
                 <div>
-                  <span style={{ color: "#25D366", fontWeight: 700 }}>✓ Linked Number:</span> {user.phone}
+                  <span style={{ color: "var(--purple)", fontWeight: 700 }}>✓ Linked Number:</span> {user.phone}
                 </div>
               ) : (
                 <span style={{ color: "var(--text-soft)" }}>
@@ -729,7 +729,7 @@ export default function ProfilePage() {
               onClick={() => setShowWhatsAppModal(true)}
               className="btn btn-sm"
               style={{
-                background: "linear-gradient(135deg, #25D366, #128C7E)",
+                background: "var(--purple)",
                 color: "#fff",
                 fontWeight: 700,
                 justifyContent: "center",
